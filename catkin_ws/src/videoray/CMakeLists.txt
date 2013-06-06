@@ -7,6 +7,24 @@ project(videoray)
 #find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation)
 
+#find_package(eigen REQUIRED)
+find_package(Eigen REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIRS})
+add_definitions(${EIGEN_DEFINITIONS})
+#
+#find_package(Eigen3 3.1.2)
+#message("+===========")
+#message("${eigen_FOUND}")
+#message("${CMAKE_ROOT}")
+#message("${EIGEN3_INCLUDE_DIR}")
+#message("${CMAKE_MODULE_PATH}")
+#message("${Eigen_INCLUDE_DIR}")
+#message("${Eigen_INCLUDES}")
+#message("${eigen_INCLUDES}")
+#message("${eigen_INCLUDE_DIR}")
+#include_directories(${eigen_INCLUDE_DIR})
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -48,7 +66,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#   INCLUDE_DIRS include
+#INCLUDE_DIRS include
 #  LIBRARIES videoray
 #  CATKIN_DEPENDS roscpp std_msgs
 #  DEPENDS system_lib
@@ -78,8 +96,10 @@ add_executable(videoray_control_p src/videoray_control_p.cpp)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(videoray_node videoray_generate_messages_cpp)
-add_dependencies(videoray_sim videoray_generate_messages_cpp)
-add_dependencies(videoray_control_p videoray_generate_messages_cpp)
+add_dependencies(videoray_control videoray_generate_messages_cpp videoray_gencpp)
+add_dependencies(videoray_sim videoray_generate_messages_cpp videoray_gencpp)
+add_dependencies(videoray_control_p videoray_generate_messages_cpp videoray_gencpp)
+
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(videoray_control
