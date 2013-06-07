@@ -13,13 +13,6 @@ clc;
 % Initial State (see <name>_model.m file for state description)
 x0 = [0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0];
 
-% ODE solver options (if using ode23)
-vopt = odeset ("RelTol", 1e-5, \
-"AbsTol", 1e-5, \
-"MaxStep", 1, \
-"InitialStep", 1, \
-"NormControl", "on");
-
 % Time variables
 t0 = 0;       % initial time
 tEnd = 5;     % end time
@@ -35,6 +28,12 @@ tStep = 0.01; % time step (if applicable)
 % required.
 
 % 1.) ode23 ODE solver option...
+%% ODE solver options (if using ode23)
+%vopt = odeset ("RelTol", 1e-5, \
+%"AbsTol", 1e-5, \
+%"MaxStep", 1, \
+%"InitialStep", 1, \
+%"NormControl", "on");
 % Build time vector and run ODE solver
 %tt = [t0, tEnd];
 %[t,xa] = ode23(@videoray_model, tt, x0, vopt);
