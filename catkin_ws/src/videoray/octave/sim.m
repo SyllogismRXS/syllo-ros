@@ -38,7 +38,10 @@ controller_id = menu("Select a controller:", \
 "Demo - open loop control", \
 "Proportional");
 
-if controller_id > 1
+global DEMO = 1;
+global PROPORTIONAL = 2;
+
+if controller_id > DEMO
     global depth_ref;
     global heading_ref;
     global speed_ref;

@@ -57,9 +57,12 @@ global Zww;
 
 % Select the appropriate controller based on user input
 global controller_id;
-if controller_id == 1
+global DEMO = 1;
+global PROPORTIONAL = 2;
+
+if controller_id == DEMO
     [X N Z] = control_openloop(t,x);
-elseif controller_id == 2
+elseif controller_id == PROPORTIONAL
     [X N Z] = control_p(t,x);
 else
     error("Invalid controller selected")
