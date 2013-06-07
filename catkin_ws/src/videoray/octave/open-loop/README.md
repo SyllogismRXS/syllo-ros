@@ -15,8 +15,7 @@ Run the simulation
 1.) Start octave in this directory.  
 2.) Execute the sim_lsode.m script  
 
-Ubuntu example:
--------------------
+### Ubuntu example:
 $ cd /path/to/syllo-ros/catkin_ws/src/videoray/octave/open-loop  
 $ octave  
 $ sim_lsode  
