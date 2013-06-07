@@ -1,15 +1,9 @@
 function [xdot] = videoray_model(t,x)
 %==============================================================================
-% Title  : VideoRay Pro III Dynamics Model
+% Title  : VideoRay Dynamics Model
 % Author : Kevin DeMarco <demarco@gatech.edu> 
 %        : http://www.kevindemarco.com
 % Date   : June 7, 2013
-% Notes  : 1. The coefficients for this model were obtained from Wei Wang's 
-%        : thesis, "Autonomous Control of a Differential Thrust Micro ROV," 
-%        : page 19.
-%        :
-%        : 2. Coefficients used were experimental, unless only the 
-%        : theoretical results were available.
 %==============================================================================
 % State Definition:
 % 1:  u     : surge velocity
@@ -44,37 +38,31 @@ psi   = x(12);
 %% VideoRay Specific Model
 
 % Added Mass Terms
-X_udot = 1.94; % inertia matrix M (m11)
-Y_vdot = 6.05; % inertia matrix M (m22)
-Z_wdot = 3.95; % m33
-N_rdot = 1.18e-2; % vehicle's motion of inertia about z-axis
-                  % (6,6) entry of the vehicle inertia Matrix M
+global X_udot;
+global Y_vdot;
+global Z_wdot;
+global N_rdot;              
 
 % Linear Drag Coefficients
-Xu = -0.95;
-Yv = -5.87;
-Nr = -0.023;
-Zw = -3.70;
+global Xu;
+global Yv;
+global Nr;
+global Zw;
 
 % Quadratic Drag Coefficients
-Xuu = -6.04;
-Yvv = -30.73;
-Nrr = -0.45;
-Zww = -26.36;
+global Xuu;
+global Yvv;
+global Nrr;
+global Zww;
 
-% Very simple control law that enables thrusters for 0.5 seconds, then
-% disables all thrusters. This is just to test the system dynamics.
-% X : input to the forward (fixed-body X) acceleration
-% N : input to the heading (theta) acceleration
-% Z : input to the vertical (Z) acceleration
-if t < 0.5
-    X = 1; % forward thrust
-    N = 1; % turning thrust
-    Z = -1; % vertical thrust
+% Select the appropriate controller based on user input
+global controller_id;
+if controller_id == 1
+    [X N Z] = control_openloop(t,x);
+elseif controller_id == 2
+    [X N Z] = control_p(t,x);
 else
-    X = 0; % forward thrust
-    N = 0; % turning thrust
-    Z = 0; % vertical thrust
+    error("Invalid controller selected")
 end
 
 % Log the thruster inputs for later plotting

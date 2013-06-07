@@ -18,6 +18,34 @@ t0 = 0;       % initial time
 tEnd = 5;     % end time
 tStep = 0.01; % time step (if applicable)
 
+% Get user input on simulation length
+tEnd = input("Enter simulation time length (sec): ");
+
+% Always use VideoRay Pro 3 coefficients until we get them for Pro 4
+videoray_pro_3_params
+%model_id = menu("Select a model to simulate:", \
+%"VideoRay Pro III", \
+%"VideoRay Pro 4");
+%
+% Load model parameters / coefficients
+%if model_id == 1
+%    videoray_pro_3_params
+%else
+%    videoray_pro_4_params
+%end
+
+clc;
+global controller_id = 1;
+controller_id = menu("Select a controller:", \
+"Open Loop", \
+"Proportional", \
+"PID");
+
+if controller_id == 2
+    global depth_ref = -1;
+end
+
+
 %% ODE Solvers
 % Currently, you have the option of two different ODE solvers. They provide
 % similar results, but the trajectories do not produce exact matches. The
