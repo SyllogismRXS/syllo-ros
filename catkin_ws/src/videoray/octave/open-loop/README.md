@@ -4,7 +4,7 @@ Kevin DeMarco <demarco@gatech.edu>
 
 Notes
 -------
-This simulation was written within the Octave framework.
+This simulation was written within the Octave framework. 
 http://www.gnu.org/software/octave/
 
 Almost all of the code could easily be executed in Matlab, with just a
