@@ -27,18 +27,22 @@ tStep = 0.01; % time step (if applicable)
 % solver, but I left it commented out at first since additional software is
 % required.
 
-% 1.) ode23 ODE solver option...
-%% ODE solver options (if using ode23)
+%% 1.) ode23 ODE solver option...
+% If you want to use ode23, you need to install odepkg. See the README.md
+% file in this directory for instructions.
+% ODE solver options (if using ode23)
+%pkg load odepkg
 %vopt = odeset ("RelTol", 1e-5, \
 %"AbsTol", 1e-5, \
 %"MaxStep", 1, \
 %"InitialStep", 1, \
 %"NormControl", "on");
-% Build time vector and run ODE solver
+
+%%Build time vector and run ODE solver
 %tt = [t0, tEnd];
 %[t,xa] = ode23(@videoray_model, tt, x0, vopt);
 
-% 2.) lsode ODE solver option...
+%% 2.) lsode ODE solver option...
 t = linspace (t0, tEnd, (tEnd-t0)/tStep);
 xa = lsode( @(x,t) videoray_model(t,x) , x0, t);
 

@@ -22,3 +22,25 @@ $ sim_lsode
 
 The sim_lsode call should generate six (6) figures that show the output
 of the simulation.
+
+Installation of Octave's odepkg
+---------------------------------
+
+### Ubuntu
+$ sudo apt-get install sudo apt-get install octave-odepkg
+
+### Others
+1.) Download the odepkg source from:  
+http://octave.sourceforge.net/odepkg
+
+2.) Run octave in the same directory as the downloaded file, which will 
+be named something like odepkg-0.8.4.tar.gz. In my case, it downloaded the
+file to the ~/Downloads directory.
+
+$ cd ~/Downloads
+
+3.) Start Octave (with sudo / installation privileges) and install the 
+package.
+
+$ octave   (or "sudo octave" in a UNIX environment)
+$ pkg install odepkg-0.8.4.tar.gz
