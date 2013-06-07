@@ -1,6 +1,6 @@
 function [X N Z] = control_openloop(t,x)
 %==============================================================================
-% Title  : Simple open loop controller
+% Title  : Simple open loop controller for dynamics demonstration
 % Author : Kevin DeMarco <demarco@gatech.edu> 
 %        : http://www.kevindemarco.com
 % Date   : June 7, 2013

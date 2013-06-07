@@ -18,11 +18,9 @@ t0 = 0;       % initial time
 tEnd = 5;     % end time
 tStep = 0.01; % time step (if applicable)
 
-% Get user input on simulation length
-tEnd = input("Enter simulation time length (sec): ");
-
 % Always use VideoRay Pro 3 coefficients until we get them for Pro 4
 videoray_pro_3_params
+
 %model_id = menu("Select a model to simulate:", \
 %"VideoRay Pro III", \
 %"VideoRay Pro 4");
@@ -37,12 +35,20 @@ videoray_pro_3_params
 clc;
 global controller_id = 1;
 controller_id = menu("Select a controller:", \
-"Open Loop", \
-"Proportional", \
-"PID");
+"Demo - open loop control", \
+"Proportional");
 
-if controller_id == 2
-    global depth_ref = -1;
+if controller_id > 1
+    global depth_ref;
+    global heading_ref;
+    global speed_ref;
+    
+    % Get user input on simulation length
+    tEnd = input("Enter simulation time length (sec): ");
+    
+    depth_ref = input("Enter desired depth: ");    
+    heading_ref = input("Enter desired heading: ");    
+    speed_ref = input("Enter desired speed: ");    
 end
 
 

@@ -5,4 +5,4 @@
 % Date   : June 7, 2013
 %==============================================================================
 
-"Don't use VideoRay Pro 4 yet. No model available."
+error("Don't use VideoRay Pro 4 yet. No model available.");
