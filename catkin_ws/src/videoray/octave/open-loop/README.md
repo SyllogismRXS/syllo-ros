@@ -42,5 +42,5 @@ $ cd ~/Downloads
 3.) Start Octave (with sudo / installation privileges) and install the 
 package.
 
-$ octave   (or "sudo octave" in a UNIX environment)
+$ octave   (or "sudo octave" in a UNIX environment)  
 $ pkg install odepkg-0.8.4.tar.gz
