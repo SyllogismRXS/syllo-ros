@@ -1,4 +1,4 @@
-function [X N Z] = control_p(t,x)
+function [u_port u_star u_vert] = control_p(t,x)
 %==============================================================================
 % Title  : Simple proportional controller
 % Author : Kevin DeMarco <demarco@gatech.edu> 
@@ -10,18 +10,41 @@ global depth_ref;
 global heading_ref;
 global speed_ref;
 
-X = 0;
-N = 0;
-Z = 0;
-
 depth_err = depth_ref - x(9);
-heading_err = heading_ref*pi/180 - x(12);
 speed_err = speed_ref - x(1);
 
-Kp = 5;
+heading = normDegrees(x(12)*180/pi);
+heading_err = heading_ref - heading;
 
-X = Kp*speed_err;
-N = Kp*heading_err;
-Z = Kp*depth_err;
+K_heading = 100;
+if (abs(heading_err) < 180)
+    heading_port = -K_heading*heading_err;
+    heading_star = K_heading*heading_err;
+else 
+    heading_port = K_heading*heading_err;
+    heading_star = -K_heading*heading_err;
+end
+
+K_speed = 100;
+speed_port = K_speed*speed_err;
+speed_star = K_speed*speed_err;
+
+heading_weight = 0.5;
+speed_weight = 0.5;
+
+u_port = heading_weight*heading_port + speed_weight*speed_port;
+u_star = heading_weight*heading_star + speed_weight*speed_star;
+
+%if (heading_err*180/pi > 5) 
+%    u_port = Kp*heading_err;
+%    u_star = -Kp*heading_err;
+%else
+%    u_port = Kp*speed_err;
+%    u_star = Kp*speed_err;
+%end
+
+Kp = 100;
+u_vert = Kp*depth_err;
+
 
 endfunction

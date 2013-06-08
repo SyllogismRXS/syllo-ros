@@ -11,11 +11,11 @@ clear;
 clc;
 
 % Initial State (see <name>_model.m file for state description)
-x0 = [0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0];
+x0 = [0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0];
 
 % Time variables
 t0 = 0;       % initial time
-tEnd = 5;     % end time
+tEnd = 30;     % end time
 tStep = 0.01; % time step (if applicable)
 
 % Always use VideoRay Pro 3 coefficients until we get them for Pro 4
@@ -47,11 +47,14 @@ if controller_id > DEMO
     global speed_ref;
     
     % Get user input on simulation length
-    tEnd = input("Enter simulation time length (sec): ");
-    
+    tEnd = input("Enter simulation time length (sec): ");    
     depth_ref = input("Enter desired depth: ");    
     heading_ref = input("Enter desired heading: ");    
     speed_ref = input("Enter desired speed: ");    
+    %tEnd = 20;
+    %depth_ref = -1;
+    %heading_ref = 90;
+    %speed_ref = 1;
 end
 
 
@@ -80,7 +83,8 @@ end
 %[t,xa] = ode23(@videoray_model, tt, x0, vopt);
 
 %% 2.) lsode ODE solver option...
-t = linspace (t0, tEnd, (tEnd-t0)/tStep);
+%t = linspace (t0, tEnd, (tEnd-t0)/tStep);
+t = t0:tStep:tEnd;
 xa = lsode( @(x,t) videoray_model(t,x) , x0, t);
 
 %% Plot Velocities
@@ -131,32 +135,48 @@ ylabel('Z-Pos');
 %% Plot Orientation
 figure;
 subplot(3,1,1);
-plot(t,xa(:,10));
+plot(t,xa(:,10)*180/pi);
 ylabel('Roll');
 
 subplot(3,1,2);
-plot(t,xa(:,11));
+plot(t,xa(:,11)*180/pi);
 ylabel('Pitch');
 
 subplot(3,1,3);
-plot(t,xa(:,12));
+plot(t,xa(:,12)*180/pi);
 xlabel('Time');
 ylabel('Yaw');
+
+%% Plot Thrust Vectors
+figure;
+subplot(3,1,1);
+plot(t(1:end-1),diff(xa(:,13))/tStep);
+ylabel('Thrust-Forw');
+
+subplot(3,1,2);
+plot(t(1:end-1),diff(xa(:,14))/tStep);
+ylabel('Thrust-Rotate');
+
+subplot(3,1,3);
+plot(t(1:end-1),diff(xa(:,15))/tStep);
+xlabel('Time');
+ylabel('Thrust-Vert');
 
 %% Plot Control Input
 figure;
 subplot(3,1,1);
-plot(t(1:end-1),diff(xa(:,13)));
-ylabel('Thrust-Forw');
+plot(t(1:end-1),diff(xa(:,16))/tStep);
+ylabel('Port Input');
 
 subplot(3,1,2);
-plot(t(1:end-1),diff(xa(:,14)));
-ylabel('Thrust-Rotate');
+plot(t(1:end-1),diff(xa(:,17))/tStep);
+ylabel('Starboard Input');
 
 subplot(3,1,3);
-plot(t(1:end-1),diff(xa(:,15)));
+plot(t(1:end-1),diff(xa(:,18))/tStep);
 xlabel('Time');
-ylabel('Thrust-Vert');
+ylabel('Vertical Input');
+
 
 %% Plot X-Y Plane
 figure;

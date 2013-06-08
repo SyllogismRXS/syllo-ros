@@ -1,4 +1,4 @@
-function [X N Z] = control_openloop(t,x)
+function [u_port u_star u_vert] = control_openloop(t,x)
 %==============================================================================
 % Title  : Simple open loop controller for dynamics demonstration
 % Author : Kevin DeMarco <demarco@gatech.edu> 
@@ -9,17 +9,15 @@ function [X N Z] = control_openloop(t,x)
 
 % Very simple control law that enables thrusters for 0.5 seconds, then
 % disables all thrusters. This is just to test the system dynamics.
-% X : input to the forward (fixed-body X) acceleration
-% N : input to the heading (theta) acceleration
-% Z : input to the vertical (Z) acceleration
-if t < 0.5
-    X = 1; % forward thrust
-    N = 1; % turning thrust
-    Z = -1; % vertical thrust
+
+if t < 5
+    u_port = 130; 
+    u_star = 150;
+    u_vert = -100;
 else
-    X = 0; % forward thrust
-    N = 0; % turning thrust
-    Z = 0; % vertical thrust
+    u_port = 0;
+    u_star = 0;
+    u_vert = 0;
 end
 
 endfunction

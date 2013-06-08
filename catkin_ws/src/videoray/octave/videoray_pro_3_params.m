@@ -30,3 +30,20 @@ global Yvv = -30.73;
 global Nrr = -0.45;
 global Zww = -26.36;
 
+global Ct_forw = 0.026667;
+global Ct_back = 0.026667;
+global Ct_vert_forw = 0.026667;
+global Ct_vert_back = 0.026667;
+
+%[TODO] : understand convertion from input u to Ct
+% Vertical Thruster Coefficients
+%global Ct_vert_forw = 1.19e-4;
+%global Ct_vert_back = 7.53e-5;
+
+%% Horizontal Thruster Coefficients
+%global Ct_forw = 2.59e-4;
+%global Ct_back = 1.01e-4;
+%
+% Input thruster saturation limits
+global u_sat_low = -150;
+global u_sat_high = 150;

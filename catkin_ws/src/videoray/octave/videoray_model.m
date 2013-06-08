@@ -21,6 +21,9 @@ function [xdot] = videoray_model(t,x)
 % 13: Thrust_X : Forward thrust
 % 14: Thrust_Theta : Yaw Thrust
 % 15: Thrust_Z : Vertical Thrust
+% 16: u_port : Portside thrust input
+% 17: u_star : Starboard thrust input
+% 18: u_vert : Vertical thrust input
 %==============================================================================
 u     = x(1);
 v     = x(2);
@@ -57,18 +60,64 @@ global Zww;
 
 % Select the appropriate controller based on user input
 global controller_id;
-global DEMO = 1;
-global PROPORTIONAL = 2;
+global DEMO;
+global PROPORTIONAL;
 
 if controller_id == DEMO
-    [X N Z] = control_openloop(t,x);
+    [u_port u_star u_vert] = control_openloop(t,x);
 elseif controller_id == PROPORTIONAL
-    [X N Z] = control_p(t,x);
+    [u_port u_star u_vert] = control_p(t,x);
 else
     error("Invalid controller selected")
 end
 
+% Saturate inputs : range is [-150 to 150]
+global u_sat_low;
+global u_sat_high;
+
+u_port = saturate(u_port, u_sat_low, u_sat_high);
+u_star = saturate(u_star, u_sat_low, u_sat_high);
+u_vert = saturate(u_vert, u_sat_low, u_sat_high);
+
 % Log the thruster inputs for later plotting
+xdot(16) = u_port;
+xdot(17) = u_star;
+xdot(18) = u_vert;
+
+% Convert thruster inputs to force vectors
+X = 0;
+N = 0;
+
+global Ct_vert_forw;
+global Ct_vert_back;
+global Ct_forw;
+global Ct_back;
+
+% Ct is different for reverse and forward
+if ( u_port >= 0 )
+    thrust_port = u_port * Ct_forw;
+else
+    thrust_port = u_port * Ct_back;
+end
+
+if ( u_star >= 0 )
+    thrust_star = u_star * Ct_forw;
+else
+    thrust_star = u_star * Ct_back;
+end
+
+X = thrust_port + thrust_star;
+N = thrust_star - thrust_port;
+
+% Ct is different for reverse and forward
+if ( u_vert >= 0 )
+    Z = u_vert * Ct_vert_forw;
+else
+    Z = u_vert * Ct_vert_back;
+end
+
+
+% Log the thruster force vectors
 xdot(13) = X;
 xdot(14) = N;
 xdot(15) = Z;
