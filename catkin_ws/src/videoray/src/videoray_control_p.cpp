@@ -3,6 +3,7 @@
 #include "videoray/Throttle.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
+#include "nav_msgs/Odometry.h"
 
 #include <iostream>
 #include <sstream>
@@ -15,44 +16,38 @@ using std::endl;
 // Converts desired heading, desired velocity, and desired depth into
 // throttle (left, right, vertical) commands
 //
+#define PI (3.14159265359)
 
-double desired_velocity_ = 0;
-double desired_heading_ = 0;
-double desired_depth_ = 0;
+double depth_ref = 0;
+double speed_ref = 0;
+double heading_ref = 0;
 
 double roll_ = 0;
 double pitch_ = 0;
 double yaw_ = 0;
 
 videoray::Throttle throttle_;
-geometry_msgs::Pose pose_;
-geometry_msgs::Twist velocity_;
 
+nav_msgs::Odometry odom_;
+void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
+{
+     odom_ = *msg;
+}
 
 void desiredVelocityCallback(const std_msgs::Float32::ConstPtr& msg)
 {
-     desired_velocity_ = msg->data;
+     speed_ref = msg->data;
 }
 
 void desiredHeadingCallback(const std_msgs::Float32::ConstPtr& msg)
 {
-     desired_heading_ = msg->data;
+     heading_ref = msg->data;
 }
 
 void desiredDepthCallback(const std_msgs::Float32::ConstPtr& msg)
 {
-     desired_depth_ = msg->data;
-     ROS_INFO("Desired Depth: %f", desired_depth_);
-}
-
-void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
-{
-     pose_ = msg->pose;
-}
-
-void velocityCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-     velocity_ = *msg;
+     depth_ref = msg->data;
+     ROS_INFO("Desired Depth: %f", depth_ref);
 }
 
 void quaternionToEuler(const double &q0, const double &q1, 
@@ -74,8 +69,6 @@ double normDegrees(double input)
      return input;
 }
 
-#define PI (3.14159265359)
-
 int main(int argc, char **argv)
 {
      ros::init(argc, argv, "videoray_control_p");
@@ -83,69 +76,69 @@ int main(int argc, char **argv)
      ros::NodeHandle n;
 
      ros::Publisher throttle_pub = 
-          n.advertise<videoray::Throttle>("throttle_cmds", 1000);
+          n.advertise<videoray::Throttle>("throttle_cmds", 1);
      
      ros::Subscriber desired_vel_sub = n.subscribe("desired_velocity", 
-                                                   1000, 
+                                                   1, 
                                                    desiredVelocityCallback);
 
      ros::Subscriber desired_head_sub = n.subscribe("desired_heading", 
-                                                    1000, 
+                                                    1, 
                                                     desiredHeadingCallback);
 
      ros::Subscriber desired_depth_sub = n.subscribe("desired_depth", 
-                                                     1000, 
+                                                     1, 
                                                      desiredDepthCallback);
 
-     ros::Subscriber pose_sub = n.subscribe("pose", 
-                                            1000, 
-                                            poseCallback);
-
-     ros::Subscriber morse_vel_sub = n.subscribe("actual_velocity", 
-                                                 1000, 
-                                                 velocityCallback);
-
-
-
+     ros::Subscriber odom_sub = n.subscribe("odometry", 
+                                            1, 
+                                            odomCallback);
+     
      ros::Rate loop_rate(10);
 
+     geometry_msgs::Quaternion quat;
+
+     double depth_err = 0;
+     double speed_err = 0;
+     double heading_err = 0;
+     double heading = 0;
+     double heading_port, heading_star, speed_port, speed_star;
+     double heading_weight = 0.5;
+     double speed_weight = 0.5;
+     double K_heading = 1;
+     double K_speed = 10;
+     double K_depth = 50;
+
      while (ros::ok())
-     {
-
-          // Depth Proportional Controller:
-          double depth_err = 5*(desired_depth_ - pose_.position.z);
-          throttle_.VerticalThrottle = depth_err;
-
-          // Heading controller:
-          geometry_msgs::Quaternion quat = pose_.orientation;
-
-          //quaternionToEuler(quat.x, quat.y, quat.z, quat.w,
-          //                  roll_, pitch_, yaw_);
+     {          
+          quat = odom_.pose.pose.orientation;
           quaternionToEuler(quat.w, quat.x, quat.y, quat.z,
                             roll_, pitch_, yaw_);
 
-          ROS_INFO("Desired heading: %f", desired_heading_);
-          ROS_INFO("Actual heading: %f", normDegrees(yaw_*180/PI));
+          //ROS_INFO("Desired heading: %f", heading_ref);
+          
+          
+          depth_err = depth_ref - odom_.pose.pose.position.z;
+          speed_err = speed_ref - odom_.twist.twist.linear.x;
 
-          yaw_ = normDegrees(yaw_*180.0/PI);
-
-
-          // fix heading first:
-          double heading_err = (desired_heading_ - yaw_);
-
+          heading = normDegrees(yaw_*180/PI);
+          ROS_INFO("Actual heading: %f", heading);
+          heading_err = heading_ref - heading;
+          
           if (abs(heading_err) < 180) {
-               throttle_.LeftThrottle = -heading_err;
-               throttle_.RightThrottle = heading_err;
-          } else {
-               throttle_.LeftThrottle = heading_err;
-               throttle_.RightThrottle = -heading_err;
+               heading_port = -K_heading*heading_err;
+               heading_star = K_heading*heading_err;
+          } else  {
+               heading_port = K_heading*heading_err;
+               heading_star = -K_heading*heading_err;
           }
           
-          // Velocity controller (forward direction: x:
-          //double vel_err = (desired_velocity_ - velocity_.linear.x);
-          //double vel_err = desired_velocity_;
-          //throttle_.LeftThrottle = vel_err;
-          //throttle_.RightThrottle = vel_err;
+          speed_port = K_speed*speed_err;
+          speed_star = K_speed*speed_err;
+
+          throttle_.PortInput = heading_weight*heading_port + speed_weight*speed_port;
+          throttle_.StarInput = heading_weight*heading_star + speed_weight*speed_star;
+          throttle_.VertInput = K_depth*depth_err;         
 
           throttle_pub.publish(throttle_);
 

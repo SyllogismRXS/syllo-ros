@@ -92,12 +92,14 @@ include_directories(include
 add_executable(videoray_control src/videoray_control.cpp)
 add_executable(videoray_sim src/videoray_sim.cpp)
 add_executable(videoray_control_p src/videoray_control_p.cpp)
+add_executable(videoray_sim_and_control src/videoray_sim_and_control.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(videoray_node videoray_generate_messages_cpp)
 add_dependencies(videoray_control videoray_generate_messages_cpp videoray_gencpp)
 add_dependencies(videoray_sim videoray_generate_messages_cpp videoray_gencpp)
+add_dependencies(videoray_sim_and_control videoray_generate_messages_cpp videoray_gencpp)
 add_dependencies(videoray_control_p videoray_generate_messages_cpp videoray_gencpp)
 
 
@@ -107,6 +109,10 @@ target_link_libraries(videoray_control
 )
 
 target_link_libraries(videoray_sim
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(videoray_sim_and_control
   ${catkin_LIBRARIES}
 )
 

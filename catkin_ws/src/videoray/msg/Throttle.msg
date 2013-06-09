@@ -1,3 +1,3 @@
-float32 LeftThrottle
-float32 RightThrottle
-float32 VerticalThrottle
+float32 PortInput
+float32 StarInput
+float32 VertInput

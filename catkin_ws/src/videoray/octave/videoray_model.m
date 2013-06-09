@@ -74,7 +74,7 @@ end
 % Saturate inputs : range is [-150 to 150]
 global u_sat_low;
 global u_sat_high;
-
+ 
 u_port = saturate(u_port, u_sat_low, u_sat_high);
 u_star = saturate(u_star, u_sat_low, u_sat_high);
 u_vert = saturate(u_vert, u_sat_low, u_sat_high);
