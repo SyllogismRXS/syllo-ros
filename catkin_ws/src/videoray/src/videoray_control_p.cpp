@@ -114,7 +114,7 @@ int main(int argc, char **argv)
           quat = odom_.pose.pose.orientation;
           quaternionToEuler(quat.w, quat.x, quat.y, quat.z,
                             roll_, pitch_, yaw_);
-
+          
           //ROS_INFO("Desired heading: %f", heading_ref);
           
           
