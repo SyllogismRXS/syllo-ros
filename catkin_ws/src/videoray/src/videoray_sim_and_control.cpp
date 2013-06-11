@@ -336,7 +336,7 @@ int main(int argc, char **argv)
                                                      1, 
                                                      desiredDepthCallback);
      
-     double rate = 60;
+     double rate = 30;
      ros::Rate loop_rate(rate);
 
      ros::Time begin = ros::Time::now();
@@ -347,6 +347,8 @@ int main(int argc, char **argv)
      geometry_msgs::Quaternion quat;
 
      runge_kutta4< state_type > stepper;
+     //runge_kutta_dopri5< state_type > stepper;
+     //adams_bashforth_moulton< 2 , state_type > stepper;
 
      while (ros::ok())
      {
@@ -355,6 +357,8 @@ int main(int argc, char **argv)
           curr_time = ros::Time::now();
           dt = curr_time - prev_time;
           prev_time = curr_time;
+
+          ROS_INFO("dt: %f\n", dt.toSec());
 
           //cout << dt.toSec() << endl << std::flush;
 
