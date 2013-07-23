@@ -40,7 +40,8 @@ double r;
 double X_udot = 1.94; // inertia matrix M (m11)
 double Y_vdot = 6.05; // inertia matrix M (m22)
 double Z_wdot = 3.95; // m33
-double N_rdot = 1.18e-2; // vehicle's motion of inertia about z-axis
+double N_rdot = 0.1;
+//double N_rdot = 1.18e-2; // vehicle's motion of inertia about z-axis
 // (6,6) entry of the vehicle inertia Matrix M
 
 // Linear Drag Coefficients
@@ -214,6 +215,16 @@ void processThrottleCmds()
 
 }
 
+double normDegrees(double input)
+{
+     if (input < 0) {
+          input += 360;
+     } else if(input >= 360) {
+          input -= 360;
+     }
+     return input;
+}
+
 void quaternionToEuler(const double &q0, const double &q1, 
                        const double &q2, const double &q3,
                        double &roll, double &pitch, double &yaw)
@@ -245,22 +256,13 @@ void desiredVelocityCallback(const std_msgs::Float32::ConstPtr& msg)
 
 void desiredHeadingCallback(const std_msgs::Float32::ConstPtr& msg)
 {
-     heading_ref = msg->data;
+     heading_ref = normDegrees(msg->data - 90);
+     //heading_ref = msg->data;
 }
 
 void desiredDepthCallback(const std_msgs::Float32::ConstPtr& msg)
 {
      depth_ref = msg->data;
-}
-
-double normDegrees(double input)
-{
-     if (input < 0) {
-          input += 360;
-     } else if(input >= 360) {
-          input -= 360;
-     }
-     return input;
 }
 
 //geometry_msgs::Quaternion quat_;
@@ -271,7 +273,8 @@ double heading = 0;
 double heading_port, heading_star, speed_port, speed_star;
 double heading_weight = 0.5;
 double speed_weight = 0.5;
-double K_heading = 0.25;
+//double K_heading = 0.25;
+double K_heading = 0.01;
 double K_speed = 10;
 double K_depth = 50;
 double roll_ = 0;
@@ -286,13 +289,14 @@ void execControlLaw()
           
      //depth_err = depth_ref - odom_.pose.pose.position.z;
      //speed_err = speed_ref - odom_.twist.twist.linear.x;
+     
      roll_ = x_[9];
      pitch_ = x_[10];
      yaw_ = x_[11];
-
+     
      depth_err = depth_ref - x_[8];
      speed_err = speed_ref - x_[0];
-
+     
      heading = normDegrees(yaw_*180/PI);
      heading_err = heading_ref - heading;
           
@@ -306,10 +310,14 @@ void execControlLaw()
           
      speed_port = K_speed*speed_err;
      speed_star = K_speed*speed_err;
-
+     
      throttle_.PortInput = heading_weight*heading_port + speed_weight*speed_port;
      throttle_.StarInput = heading_weight*heading_star + speed_weight*speed_star;
-     throttle_.VertInput = K_depth*depth_err;         
+     throttle_.VertInput = K_depth*depth_err;
+
+     //throttle_.PortInput = 100;
+     //throttle_.StarInput = 95;
+     //throttle_.VertInput = 0;
 }
 
 int main(int argc, char **argv)
@@ -324,6 +332,14 @@ int main(int argc, char **argv)
      ros::Publisher pose_pub = n.advertise<geometry_msgs::Pose>("motion",1);
      geometry_msgs::Pose pose_;
 
+     ros::Publisher pub_nav_x = n.advertise<std_msgs::Float32>("NAV_X",1);
+     ros::Publisher pub_nav_y = n.advertise<std_msgs::Float32>("NAV_Y",1);
+     ros::Publisher pub_nav_depth = n.advertise<std_msgs::Float32>("NAV_DEPTH",1);
+     ros::Publisher pub_nav_heading = n.advertise<std_msgs::Float32>("NAV_HEADING",1);
+     ros::Publisher pub_nav_speed = n.advertise<std_msgs::Float32>("NAV_SPEED",1);
+
+     std_msgs::Float32 nav_x, nav_y, nav_depth, nav_heading, nav_speed;
+
      ros::Subscriber desired_vel_sub = n.subscribe("desired_velocity", 
                                                    1, 
                                                    desiredVelocityCallback);
@@ -336,7 +352,8 @@ int main(int argc, char **argv)
                                                      1, 
                                                      desiredDepthCallback);
      
-     double rate = 30;
+     //double rate = 30;
+     double rate = 10;
      ros::Rate loop_rate(rate);
 
      ros::Time begin = ros::Time::now();
@@ -392,21 +409,21 @@ int main(int argc, char **argv)
 
           stepper.do_step(videoray_model, x_ , curr_time.toSec() , dt.toSec() );
 
-          //ROS_INFO("========================");
-          //ROS_INFO("Current: %f, \tdt: %f", curr_time.toSec(), dt.toSec());
-          //ROS_INFO("Surge: %f", x[0]);
-          //ROS_INFO("Sway: %f", x[1]);
-          //ROS_INFO("Heave: %f", x[2]);
-          //
-          //ROS_INFO("3: %f", x[3]);
-          //ROS_INFO("4: %f", x[4]);
-          //ROS_INFO("5: %f", x[5]);
-          ////ROS_INFO("6: %f", x[6]);
-          ////ROS_INFO("7: %f", x[7]);
-          ////ROS_INFO("8: %f", x[8]);
-          ////ROS_INFO("9: %f", x[9]);
-          ////ROS_INFO("10: %f", x[10]);
-          ////ROS_INFO("11: %f", x[11]);
+          ROS_INFO("========================");
+          ROS_INFO("Current: %f, \tdt: %f", curr_time.toSec(), dt.toSec());
+          ROS_INFO("Surge: %f", x_[0]);
+          ROS_INFO("Sway: %f", x_[1]);
+          ROS_INFO("Heave: %f", x_[2]);
+          
+          ROS_INFO("3: %f", x_[3]);
+          ROS_INFO("4: %f", x_[4]);
+          ROS_INFO("5: %f", x_[5]);
+          ROS_INFO("6: %f", x_[6]);
+          ROS_INFO("7: %f", x_[7]);
+          ROS_INFO("8: %f", x_[8]);
+          ROS_INFO("9: %f", x_[9]);
+          ROS_INFO("10: %f", x_[10]);
+          ROS_INFO("11: %f", x_[11]);
           
           //velocity_linear_.x = x[0];
           //velocity_linear_.y = x[1];
@@ -450,6 +467,18 @@ int main(int argc, char **argv)
           pose_.orientation.w = quat.w;
 
           pose_pub.publish(pose_);
+
+          nav_x.data = x_[6];
+          nav_y.data = x_[7];
+          nav_depth.data = x_[8];
+          nav_speed.data = x_[0];
+          nav_heading.data = normDegrees(x_[11]*180.0/PI + 90);
+
+          pub_nav_x.publish(nav_x);
+          pub_nav_y.publish(nav_y);
+          pub_nav_depth.publish(nav_depth);
+          pub_nav_heading.publish(nav_heading);
+          pub_nav_speed.publish(nav_speed);
 
           ros::spinOnce();
 

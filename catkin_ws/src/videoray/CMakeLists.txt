@@ -5,7 +5,13 @@ project(videoray)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS 
+  roscpp 
+  std_msgs 
+  message_generation 
+  sensor_msgs 
+  cv_bridge
+)
 
 #find_package(eigen REQUIRED)
 find_package(Eigen REQUIRED)
@@ -93,6 +99,8 @@ add_executable(videoray_control src/videoray_control.cpp)
 add_executable(videoray_sim src/videoray_sim.cpp)
 add_executable(videoray_control_p src/videoray_control_p.cpp)
 add_executable(videoray_sim_and_control src/videoray_sim_and_control.cpp)
+add_executable(videoray_moos src/videoray_moos.cpp)
+add_executable(cam_sim src/cam_sim.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -100,8 +108,9 @@ add_executable(videoray_sim_and_control src/videoray_sim_and_control.cpp)
 add_dependencies(videoray_control videoray_generate_messages_cpp videoray_gencpp)
 add_dependencies(videoray_sim videoray_generate_messages_cpp videoray_gencpp)
 add_dependencies(videoray_sim_and_control videoray_generate_messages_cpp videoray_gencpp)
+add_dependencies(videoray_moos videoray_generate_messages_cpp videoray_gencpp)
 add_dependencies(videoray_control_p videoray_generate_messages_cpp videoray_gencpp)
-
+add_dependencies(cam_sim videoray_generate_messages_cpp videoray_gencpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(videoray_control
@@ -116,7 +125,18 @@ target_link_libraries(videoray_sim_and_control
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(videoray_moos
+  ${catkin_LIBRARIES}
+)
+
 target_link_libraries(videoray_control_p
+  ${catkin_LIBRARIES}
+)
+
+find_package(OpenCV REQUIRED)
+
+target_link_libraries(cam_sim
+  ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
 )
 
