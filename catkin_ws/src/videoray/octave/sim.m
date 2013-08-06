@@ -88,19 +88,20 @@ t = t0:tStep:tEnd;
 xa = lsode( @(x,t) videoray_model(t,x) , x0, t);
 
 %% Plot Velocities
+%figure('Position',[20,20,600,600]);
 figure;
 subplot(3,1,1);
 plot(t,xa(:,1));
-ylabel('Surge');
+ylabel('Surge (m/s)');
 
 subplot(3,1,2);
 plot(t,xa(:,2));
-ylabel('Sway');
+ylabel('Sway (m/s)');
 
 subplot(3,1,3);
 plot(t,xa(:,3));
-xlabel('Time');
-ylabel('Heave');
+xlabel('Time (s)');
+ylabel('Heave (m/s)');
 
 %% Plot Orientation Rates
 figure;
@@ -121,16 +122,16 @@ ylabel('Yaw Rate');
 figure;
 subplot(3,1,1);
 plot(t,xa(:,7));
-ylabel('X-Pos');
+ylabel('X-Pos (m)');
 
 subplot(3,1,2);
 plot(t,xa(:,8));
-ylabel('Y-Pos');
+ylabel('Y-Pos (m)');
 
 subplot(3,1,3);
 plot(t,xa(:,9));
-xlabel('Time');
-ylabel('Z-Pos');
+xlabel('Time (s)');
+ylabel('Z-Pos (m)');
 
 %% Plot Orientation
 figure;
@@ -144,7 +145,7 @@ ylabel('Pitch');
 
 subplot(3,1,3);
 plot(t,xa(:,12)*180/pi);
-xlabel('Time');
+xlabel('Time (s)');
 ylabel('Yaw');
 
 %% Plot Thrust Vectors
@@ -174,7 +175,7 @@ ylabel('Starboard Input');
 
 subplot(3,1,3);
 plot(t(1:end-1),diff(xa(:,18))/tStep);
-xlabel('Time');
+xlabel('Time (s)');
 ylabel('Vertical Input');
 
 
@@ -182,5 +183,5 @@ ylabel('Vertical Input');
 figure;
 plot(xa(:,7), xa(:,8));
 title('X-Y Pos');
-xlabel('X-Pos');
-ylabel('Y-Pos');
+xlabel('X-Pos (m)');
+ylabel('Y-Pos (m)');
