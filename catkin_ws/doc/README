@@ -1,0 +1,6 @@
+Add the following to .bashrc to include this catkin worspace...
+
+CATKIN_WS1_SETUP=~/git-repos/syllo-ros/catkin_ws/devel/setup.sh                |                         
+if [ -f ${CATKIN_WS1_SETUP} ]; then                                            |                         
+source ${CATKIN_WS1_SETUP}                                                     |                         
+fi 
