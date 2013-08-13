@@ -4,7 +4,7 @@
 /// @file Packetizer.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-08-13 00:35:22 syllogismrxs>
+/// Time-stamp: <2013-08-13 14:56:43 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 13 Aug 2013
@@ -41,14 +41,48 @@
 
 class Packetizer {
 private:
-     int count_;
+     unsigned char network_id_;
+     unsigned char flags_;
+     unsigned char csr_addr_;
+     unsigned char length_;
+     unsigned char header_chk_sum_;
+     unsigned char total_chk_sum_;
+
+     const unsigned short int REQUEST_SYNC_MSB_;
+     const unsigned short int REQUEST_SYNC_LSB_;
+     const unsigned short int RESPONSE_SYNC_MSB_;
+     const unsigned short int RESPONSE_SYNC_LSB_;
      
+     char *packet_;
+
+     unsigned char generate_check_sum(char *buf, int length);
+
+     int count_;
+     int rx_bytes_;
+
 protected:
 public:
+
+     enum Status_t
+     {
+          Success = 0,
+          In_Progress = 1,
+          Hdr_Chk_Sum_Err = 2,
+          Total_Chk_Sum_Err = 3,
+          Sync_Err = 4
+     };
+
      Packetizer();
 
-     int count();
-     void set_count(int count);
+     void set_network_id(unsigned char network_id);
+     void set_flags(unsigned char flags);
+     void set_csr_addr(unsigned char csr_addr);     
+     void set_data(char * data, int length);
+     
+     int generate_packet(char **packet);
+
+     Packetizer::Status_t receive_packet(char byte);
+
 };
 
 #endif

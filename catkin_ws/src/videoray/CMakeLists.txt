@@ -6,6 +6,7 @@ project(videoray)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 find_package(catkin REQUIRED COMPONENTS 
+  serial
   roscpp 
   std_msgs 
   message_generation 
@@ -13,23 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
-#find_package(eigen REQUIRED)
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
-#
-#find_package(Eigen3 3.1.2)
-#message("+===========")
-#message("${eigen_FOUND}")
-#message("${CMAKE_ROOT}")
-#message("${EIGEN3_INCLUDE_DIR}")
-#message("${CMAKE_MODULE_PATH}")
-#message("${Eigen_INCLUDE_DIR}")
-#message("${Eigen_INCLUDES}")
-#message("${eigen_INCLUDES}")
-#message("${eigen_INCLUDE_DIR}")
-#include_directories(${eigen_INCLUDE_DIR})
-
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -74,7 +61,7 @@ generate_messages(
 catkin_package(
    INCLUDE_DIRS include
 #  LIBRARIES videoray
-#  CATKIN_DEPENDS roscpp std_msgs
+   CATKIN_DEPENDS roscpp std_msgs serial
 #  DEPENDS system_lib
 )
 
@@ -88,6 +75,9 @@ include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+message("+++++++=============")
+message(${catkin_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(videoray
@@ -103,7 +93,10 @@ add_executable(videoray_sim_and_control src/sim/videoray_sim_and_control.cpp)
 add_executable(videoray_moos src/sim/videoray_moos.cpp)
 add_executable(cam_sim src/sim/cam_sim.cpp)
 
-add_executable(control src/control/main.cpp src/comm/Packetizer.cpp)
+add_executable(control 
+  src/control/main.cpp 
+  src/comm/Packetizer.cpp 
+  src/comm/VideoRayComm.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
