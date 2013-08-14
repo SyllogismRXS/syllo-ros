@@ -96,7 +96,9 @@ add_executable(cam_sim src/sim/cam_sim.cpp)
 add_executable(control 
   src/control/main.cpp 
   src/comm/Packetizer.cpp 
-  src/comm/VideoRayComm.cpp)
+  src/comm/VideoRayComm.cpp
+  src/control/Joystick.cpp
+  )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

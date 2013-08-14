@@ -320,8 +320,6 @@ char serialib::ReadChar(char *pByte,unsigned int TimeOut_ms)
 #endif
 }
 
-
-
 /*!
   \brief Read a string from the serial device (without TimeOut)
   \param String : string read on the serial device

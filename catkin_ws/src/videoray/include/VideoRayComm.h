@@ -4,7 +4,7 @@
 /// @file VideoRayComm.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-08-13 14:46:21 syllogismrxs>
+/// Time-stamp: <2013-08-14 13:14:10 yellowin>
 ///
 /// @version 1.0
 /// Created: 13 Aug 2013
@@ -44,6 +44,7 @@
 
 class VideoRayComm {
 private:
+     int depth_;
      int heading_;
      int roll_;
      int pitch_;
@@ -58,11 +59,8 @@ private:
      int heave_accel_;
      
      char tx_ctrl_data[15];
-     char rx_ctrl_Data[15];
-
-     char tx_sensor_data[11];
-     char rx_sensor_data[11];
-
+     //char tx_sensor_data[7];
+     
      Packetizer packetizer_;
      Packetizer receiver_;
      serialib serial_;     
@@ -82,13 +80,16 @@ public:
      Status_t set_desired_heading(int heading);
      Status_t set_desired_depth(int depth);
      Status_t set_focus(int focus);
+     Status_t set_camera_tilt(int tilt);
      Status_t set_lights(int lights);
      Status_t set_vertical_thruster(int thrust);
      Status_t set_port_thruster(int thrust);
      Status_t set_starboard_thruster(int thrust);
 
-     Status_t exec_transfer();
+     Status_t send_control_command();
+     Status_t send_sensor_command();
 
+     int depth();
      int heading();
      int roll();
      int pitch();
