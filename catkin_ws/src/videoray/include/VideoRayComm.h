@@ -4,7 +4,7 @@
 /// @file VideoRayComm.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-08-20 16:19:19 yellowin>
+/// Time-stamp: <2013-08-20 17:01:09 yellowin>
 ///
 /// @version 1.0
 /// Created: 13 Aug 2013
@@ -91,7 +91,7 @@ public:
      Status_t set_starboard_thruster(int thrust);
 
      Status_t send_control_command();
-     Status_t send_sensor_command();
+     Status_t send_nav_data_command();
 
      double depth();
      double heading();

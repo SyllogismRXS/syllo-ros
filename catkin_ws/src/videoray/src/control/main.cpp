@@ -145,10 +145,11 @@ int main(int argc, char **argv)
                }
                
                if (logging_) {
-                    status = comm.send_sensor_command();
+                    status = comm.send_nav_data_command();
                     if (status != VideoRayComm::Success) {
                          cout << "Exec Transfer Error!" << endl;
                     }
+                    
                     //cout << "------------------------------------" << endl;
                     //cout << "Heading: " << comm.heading() << endl;
                     //cout << "Pitch: " << comm.pitch() << endl;

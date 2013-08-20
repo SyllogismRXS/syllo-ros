@@ -37,7 +37,8 @@
 
 //////////////////////////////
 // RX Control Packet Defines
-//////////////////////////////
+// CSR Map Defines
+////////////////////////////
 //#define DEVICE_ID      0
 //#define DEPTH_LSB      1
 //#define DEPTH_MSB      2
@@ -259,7 +260,7 @@ short VideoRayComm::swap_bytes(char *array, int msb, int lsb)
      return temp;
 }
 
-VideoRayComm::Status_t VideoRayComm::send_sensor_command()
+VideoRayComm::Status_t VideoRayComm::send_nav_data_command()
 {
      char * packet;
      int bytes;
@@ -268,14 +269,12 @@ VideoRayComm::Status_t VideoRayComm::send_sensor_command()
      // Tx Sensor Message
      //////////////////////
      // Generate Packet and grab reference to it
-     ////packetizer_.set_flags(0x8C);
-     ////packetizer_.set_flags(0xA0);
-     ////packetizer_.set_csr_addr(0x6E);
+     //// Packet for CSR map read...
      //packetizer_.set_flags(0x94);
      //packetizer_.set_csr_addr(0x66);          
      //packetizer_.set_data(tx_ctrl_data, 0);
      
-     // Custom message
+     // Navigation data vendor specific message...
      packetizer_.set_flags(0x5);
      packetizer_.set_csr_addr(0x0);          
      packetizer_.set_data(tx_ctrl_data, 0);
