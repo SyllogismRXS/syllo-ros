@@ -4,7 +4,7 @@
 /// @file VideoRayComm.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-08-14 13:14:10 yellowin>
+/// Time-stamp: <2013-08-20 16:19:19 yellowin>
 ///
 /// @version 1.0
 /// Created: 13 Aug 2013
@@ -44,26 +44,30 @@
 
 class VideoRayComm {
 private:
-     int depth_;
-     int heading_;
-     int roll_;
-     int pitch_;
-     int water_temperature_;
-     int internal_temperature_;
-     int water_ingress_;
-     int yaw_accel_;
-     int pitch_accel_;
-     int roll_accel_;
-     int surge_accel_;
-     int sway_accel_;
-     int heave_accel_;
+     double depth_;
+     double heading_;
+     double roll_;
+     double pitch_;
+     double water_temperature_;
+     double internal_temperature_;
+     double water_ingress_;
+     double yaw_accel_;
+     double pitch_accel_;
+     double roll_accel_;
+     double surge_accel_;
+     double sway_accel_;
+     double heave_accel_;
      
+     double rov_power_;
+
      char tx_ctrl_data[15];
      //char tx_sensor_data[7];
      
      Packetizer packetizer_;
      Packetizer receiver_;
      serialib serial_;     
+
+     short swap_bytes(char *in, int msb, int lsb);
 
 protected:
 public:
@@ -89,20 +93,20 @@ public:
      Status_t send_control_command();
      Status_t send_sensor_command();
 
-     int depth();
-     int heading();
-     int roll();
-     int pitch();
-     int water_temperature();
-     int internal_temperature();
-     int water_ingress();
+     double depth();
+     double heading();
+     double roll();
+     double pitch();
+     double water_temperature();
+     double internal_temperature();
+     double water_ingress();
 
-     int yaw_accel();
-     int pitch_accel();
-     int roll_accel();
-     int surge_accel();
-     int sway_accel();
-     int heave_accel();
+     double yaw_accel();
+     double pitch_accel();
+     double roll_accel();
+     double surge_accel();
+     double sway_accel();
+     double heave_accel();
 
 };
 

@@ -72,7 +72,7 @@ int main(int argc, char **argv)
      int num_of_buttons_;
      int num_of_axis_;
 
-     js_.init("/dev/input/js1");
+     js_.init("/dev/input/js0");
      num_of_axis_ = js_.num_of_axis();
      num_of_buttons_ = js_.num_of_buttons();     
 
@@ -149,17 +149,17 @@ int main(int argc, char **argv)
                     if (status != VideoRayComm::Success) {
                          cout << "Exec Transfer Error!" << endl;
                     }
-                    cout << "------------------------------------" << endl;
-                    cout << "Heading: " << comm.heading() << endl;
-                    cout << "Pitch: " << comm.pitch() << endl;
-                    cout << "Roll: " << comm.roll() << endl;
-                    cout << "Depth: " << comm.depth() << endl;
-                    cout << "Yaw Accel: " << comm.yaw_accel() << endl;
-                    cout << "Pitch Accel: " << comm.pitch_accel() << endl;
-                    cout << "Roll Accel: " << comm.roll_accel() << endl;
-                    cout << "Surge Accel: " << comm.surge_accel() << endl;
-                    cout << "Sway Accel: " << comm.sway_accel() << endl;
-                    cout << "Heave Accel: " << comm.heave_accel() << endl;
+                    //cout << "------------------------------------" << endl;
+                    //cout << "Heading: " << comm.heading() << endl;
+                    //cout << "Pitch: " << comm.pitch() << endl;
+                    //cout << "Roll: " << comm.roll() << endl;
+                    //cout << "Depth: " << comm.depth() << endl;
+                    //cout << "Yaw Accel: " << comm.yaw_accel() << endl;
+                    //cout << "Pitch Accel: " << comm.pitch_accel() << endl;
+                    //cout << "Roll Accel: " << comm.roll_accel() << endl;
+                    //cout << "Surge Accel: " << comm.surge_accel() << endl;
+                    //cout << "Sway Accel: " << comm.sway_accel() << endl;
+                    //cout << "Heave Accel: " << comm.heave_accel() << endl;
                     
                     file << comm.heading() << endl;
 

@@ -38,15 +38,37 @@
 //////////////////////////////
 // RX Control Packet Defines
 //////////////////////////////
+//#define DEVICE_ID      0
+//#define DEPTH_LSB      1
+//#define DEPTH_MSB      2
+//#define HEADING_LSB    3
+//#define HEADING_MSB    4
+//#define PITCH_LSB      5
+//#define PITCH_MSB      6
+//#define ROLL_LSB       7
+//#define ROLL_MSB       8
+//#define YAW_ACC_LSB    9
+//#define YAW_ACC_MSB    10
+//#define PITCH_ACC_LSB  11
+//#define PITCH_ACC_MSB  12
+//#define ROLL_ACC_LSB   13
+//#define ROLL_ACC_MSB   14
+//#define SURGE_ACC_LSB  15
+//#define SURGE_ACC_MSB  16
+//#define SWAY_ACC_LSB   17
+//#define SWAY_ACC_MSB   18
+//#define HEAVE_ACC_LSB  19
+//#define HEAVE_ACC_MSB  20
+
 #define DEVICE_ID      0
-#define DEPTH_LSB      1
-#define DEPTH_MSB      2
-#define HEADING_LSB    3
-#define HEADING_MSB    4
-#define PITCH_LSB      5
-#define PITCH_MSB      6
-#define ROLL_LSB       7
-#define ROLL_MSB       8
+#define HEADING_LSB    1
+#define HEADING_MSB    2
+#define PITCH_LSB      3
+#define PITCH_MSB      4
+#define ROLL_LSB       5
+#define ROLL_MSB       6
+#define DEPTH_LSB      7
+#define DEPTH_MSB      8
 #define YAW_ACC_LSB    9
 #define YAW_ACC_MSB    10
 #define PITCH_ACC_LSB  11
@@ -59,6 +81,20 @@
 #define SWAY_ACC_MSB   18
 #define HEAVE_ACC_LSB  19
 #define HEAVE_ACC_MSB  20
+#define RAW_MAG_X_LSB  21
+#define RAW_MAG_X_MSB  22
+#define RAW_MAG_Y_LSB  23
+#define RAW_MAG_Y_MSB  24
+#define RAW_MAG_Z_LSB  25
+#define RAW_MAG_Z_MSB  26
+#define ATTITUDE_LSB   27
+#define ATTITUDE_MSB   28
+#define HUMIDITY_LSB   29
+#define HUMIDITY_MSB   30
+#define WATER_TEMP_LSB 31
+#define WATER_TEMP_MSB 32
+#define ROV_PWR_LSB    33
+#define ROV_PWR_MSB    34
 
 using std::cout;
 using std::endl;
@@ -198,7 +234,6 @@ VideoRayComm::Status_t VideoRayComm::send_control_command()
           //     printf("%x ", (unsigned char)packet[x]);
           //}
           //printf("\n");
-
           //short temp = 0;
           //temp = ((short)(packet[HEADING_MSB]) << 8) | packet[HEADING_LSB]; 
           //heading_ = temp;
@@ -217,6 +252,12 @@ VideoRayComm::Status_t VideoRayComm::send_control_command()
      return VideoRayComm::Success;
 }
 
+short VideoRayComm::swap_bytes(char *array, int msb, int lsb)
+{
+     short temp = 0;
+     temp = ((unsigned short)(array[msb] & 0xFF) << 8) | (array[lsb] & 0xFF);
+     return temp;
+}
 
 VideoRayComm::Status_t VideoRayComm::send_sensor_command()
 {
@@ -227,18 +268,19 @@ VideoRayComm::Status_t VideoRayComm::send_sensor_command()
      // Tx Sensor Message
      //////////////////////
      // Generate Packet and grab reference to it
-     //packetizer_.set_flags(0x8C);
-     //packetizer_.set_flags(0xA0);
-     //packetizer_.set_csr_addr(0x6E);
-     packetizer_.set_flags(0x94);
-     packetizer_.set_csr_addr(0x66);          
-     packetizer_.set_data(tx_ctrl_data, 0);
-     bytes = packetizer_.generate_packet(&packet);
+     ////packetizer_.set_flags(0x8C);
+     ////packetizer_.set_flags(0xA0);
+     ////packetizer_.set_csr_addr(0x6E);
+     //packetizer_.set_flags(0x94);
+     //packetizer_.set_csr_addr(0x66);          
+     //packetizer_.set_data(tx_ctrl_data, 0);
      
-     //for (int x = 0 ; x < bytes ; x++) {
-     //     printf("%x ", (unsigned char)packet[x]);
-     //}
-     //printf("\n");
+     // Custom message
+     packetizer_.set_flags(0x5);
+     packetizer_.set_csr_addr(0x0);          
+     packetizer_.set_data(tx_ctrl_data, 0);
+
+     bytes = packetizer_.generate_packet(&packet);
      
      // Send the Tx Control packet over the serial line
      serial_.Write((const void *)packet, bytes);
@@ -253,10 +295,8 @@ VideoRayComm::Status_t VideoRayComm::send_sensor_command()
                printf("Error reading byte.\n");
                break;
           }          
-          //printf("%x ", (unsigned char)byte);
      } while(status == Packetizer::In_Progress);
-     //printf("\n");
-
+     
      if (status == Packetizer::Success) {
           bytes = receiver_.get_payload(&packet);
           
@@ -264,114 +304,91 @@ VideoRayComm::Status_t VideoRayComm::send_sensor_command()
           //     printf("%x ", (unsigned char)packet[x]);
           //}
           //printf("\n");
-          
-          short temp = 0;
-          temp = ((short)(packet[DEPTH_MSB]) << 8) | packet[DEPTH_LSB]; 
-          depth_ = temp;
-                    
-          temp = ((short)(packet[HEADING_MSB]) << 8) | packet[HEADING_LSB]; 
-          heading_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[PITCH_MSB]) << 8) | packet[PITCH_LSB]; 
-          pitch_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[ROLL_MSB]) << 8) | packet[ROLL_LSB]; 
-          roll_ = temp;
+                   
+          heading_ = swap_bytes(packet, HEADING_MSB, HEADING_LSB) / 10.0;
+          pitch_ = swap_bytes(packet, PITCH_MSB, PITCH_LSB) / 10.0;
+          roll_ = swap_bytes(packet, ROLL_MSB, ROLL_LSB) / 10.0;
 
-          temp = 0;
-          temp = ((short)(packet[YAW_ACC_MSB]) << 8) | packet[YAW_ACC_LSB]; 
-          yaw_accel_ = temp;
+          depth_ = swap_bytes(packet, DEPTH_MSB, DEPTH_LSB) / 10.0;
+
+          yaw_accel_ = swap_bytes(packet, YAW_ACC_MSB, YAW_ACC_LSB) / 1000.0;
+          pitch_accel_ = swap_bytes(packet, PITCH_ACC_MSB, PITCH_ACC_LSB) / 1000.0;
+          roll_accel_ = swap_bytes(packet, ROLL_ACC_MSB, ROLL_ACC_LSB) / 1000.0;
+
+          surge_accel_ = swap_bytes(packet, SURGE_ACC_MSB, SURGE_ACC_LSB) / 1000.0;
+          sway_accel_ = swap_bytes(packet, SWAY_ACC_MSB, SWAY_ACC_LSB) / 1000.0;          
+          heave_accel_ = swap_bytes(packet, HEAVE_ACC_MSB, HEAVE_ACC_LSB) / 1000.0;          
+
+          rov_power_ = swap_bytes(packet,  ROV_PWR_MSB, ROV_PWR_LSB);
           
-          temp = 0;
-          temp = ((short)(packet[PITCH_ACC_MSB]) << 8) | packet[PITCH_ACC_LSB]; 
-          pitch_accel_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[ROLL_ACC_MSB]) << 8) | packet[ROLL_ACC_LSB]; 
-          roll_accel_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[SURGE_ACC_MSB]) << 8) | packet[SURGE_ACC_LSB]; 
-          surge_accel_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[SWAY_ACC_MSB]) << 8) | packet[SWAY_ACC_LSB]; 
-          sway_accel_ = temp;
-          
-          temp = 0;
-          temp = ((short)(packet[HEAVE_ACC_MSB]) << 8) | packet[HEAVE_ACC_LSB]; 
-          heave_accel_ = temp;
-                    
      } else {
           printf("Decode Error.\n");
      }
      return VideoRayComm::Success;
 }
 
-int VideoRayComm::heading()
+double VideoRayComm::heading()
 {
      return heading_;
 }
 
-int VideoRayComm::depth()
+double VideoRayComm::depth()
 {
      return depth_;
 }
 
 
-int VideoRayComm::roll()
+double VideoRayComm::roll()
 {
      return roll_;
 }
 
-int VideoRayComm::pitch()
+double VideoRayComm::pitch()
 {
      return pitch_;
 }
 
-int VideoRayComm::water_temperature()
+double VideoRayComm::water_temperature()
 {
      return water_temperature_;
 }
 
-int VideoRayComm::internal_temperature()
+double VideoRayComm::internal_temperature()
 {
      return internal_temperature_;
 }
 
-int VideoRayComm::water_ingress()
+double VideoRayComm::water_ingress()
 {
      return water_ingress_;
 }
 
-int VideoRayComm::yaw_accel()
+double VideoRayComm::yaw_accel()
 {
      return yaw_accel_;
 }
 
-int VideoRayComm::pitch_accel()
+double VideoRayComm::pitch_accel()
 {
      return pitch_accel_;
 }
 
-int VideoRayComm::roll_accel()
+double VideoRayComm::roll_accel()
 {
      return roll_accel_;
 }
 
-int VideoRayComm::surge_accel()
+double VideoRayComm::surge_accel()
 {
      return surge_accel_;
 }
 
-int VideoRayComm::sway_accel()
+double VideoRayComm::sway_accel()
 {
      return sway_accel_;
 }
 
-int VideoRayComm::heave_accel()
+double VideoRayComm::heave_accel()
 {
      return heave_accel_;
 }
