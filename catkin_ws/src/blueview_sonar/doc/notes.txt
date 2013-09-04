@@ -1,0 +1,3 @@
+Libraries required to build 32-bit on 64-bit system...
+
+sudo apt-get install g++-multilib ia32-libs lib32stdc++6 libc6-dev-i386
