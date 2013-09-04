@@ -4,7 +4,7 @@
 /// @file Packetizer.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-08-13 14:56:43 syllogismrxs>
+/// Time-stamp: <2013-08-14 11:59:38 yellowin>
 ///
 /// @version 1.0
 /// Created: 13 Aug 2013
@@ -48,10 +48,10 @@ private:
      unsigned char header_chk_sum_;
      unsigned char total_chk_sum_;
 
-     const unsigned short int REQUEST_SYNC_MSB_;
-     const unsigned short int REQUEST_SYNC_LSB_;
-     const unsigned short int RESPONSE_SYNC_MSB_;
-     const unsigned short int RESPONSE_SYNC_LSB_;
+     const unsigned char REQUEST_SYNC_MSB_;
+     const unsigned char REQUEST_SYNC_LSB_;
+     const unsigned char RESPONSE_SYNC_MSB_;
+     const unsigned char RESPONSE_SYNC_LSB_;
      
      char *packet_;
 
@@ -81,8 +81,9 @@ public:
      
      int generate_packet(char **packet);
 
-     Packetizer::Status_t receive_packet(char byte);
-
+     void reset();
+     Packetizer::Status_t receive_packet(unsigned char byte);
+     int get_payload(char ** packet);
 };
 
 #endif

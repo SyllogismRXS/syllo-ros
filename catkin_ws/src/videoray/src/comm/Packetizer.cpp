@@ -20,6 +20,7 @@ Packetizer::Packetizer() : REQUEST_SYNC_MSB_(0xFA), REQUEST_SYNC_LSB_(0xAF),
                            RESPONSE_SYNC_MSB_(0xFD), RESPONSE_SYNC_LSB_(0xDF) 
 {
      count_ = 0;
+     packet_ = NULL;
 }
 
 void Packetizer::set_network_id(unsigned char network_id)
@@ -40,8 +41,8 @@ void Packetizer::set_csr_addr(unsigned char csr_addr)
 void Packetizer::set_data(char * data, int length)
 {
      length_ = length;
-
-     if (packet_ != NULL) {
+     
+     if (packet_) {
           delete[] packet_;
      }
 
@@ -52,7 +53,7 @@ void Packetizer::set_data(char * data, int length)
      packet_ = new char[HEADER_SIZE + length_ + 1];
      
      // copy data to internal buffer
-     memcpy(packet_ + PAYLOAD, data, length_);
+     memcpy(packet_ + PAYLOAD, data, length_);     
 }
 
 unsigned char Packetizer::generate_check_sum(char *buf, int length)
@@ -77,12 +78,17 @@ int Packetizer::generate_packet(char ** packet)
      // Data has already been copied to payload
      packet_[HEADER_SIZE + length_] = generate_check_sum(packet_ + HEADER_SIZE, length_);
 
-     packet = &packet_;
+     *packet = packet_;
      
      return (HEADER_SIZE + length_ + 1);
 }
 
-Packetizer::Status_t Packetizer::receive_packet(char byte)
+void Packetizer::reset()
+{
+     count_ = 0;
+}
+
+Packetizer::Status_t Packetizer::receive_packet(unsigned char byte)
 {
      bool in_prog = false;
      bool sync_err = false;
@@ -131,7 +137,7 @@ Packetizer::Status_t Packetizer::receive_packet(char byte)
           count_++;
           in_prog = true;
           
-          if (packet_ != NULL) {
+          if (packet_) {
                delete[] packet_;
           }
           packet_ = new char[length_];
@@ -170,4 +176,10 @@ Packetizer::Status_t Packetizer::receive_packet(char byte)
      if (in_prog) {
           return Packetizer::In_Progress;
      }
+}
+
+int Packetizer::get_payload(char ** packet)
+{
+     *packet = packet_;
+     return rx_bytes_;
 }
