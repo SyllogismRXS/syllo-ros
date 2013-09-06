@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AutopilotWidget</class>
- <widget class="QWidget" name="AutopilotWidget">
+ <class>(>>>APP-NAME<<<)Widget</class>
+ <widget class="QWidget" name="(>>>APP-NAME<<<)Widget">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -10,11 +10,11 @@
     <x>0</x>
     <y>0</y>
     <width>391</width>
-    <height>126</height>
+    <height>116</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Autopilot</string>
+   <string>(>>>APP-NAME<<<)</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
    <item>
@@ -41,10 +41,13 @@
      </property>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="3" column="2">
-        <widget class="QCheckBox" name="desired_heading_checkbox">
+       <item row="3" column="3">
+        <widget class="QPushButton" name="set_heading_button">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
-          <string>Enable </string>
+          <string>Set</string>
          </property>
         </widget>
        </item>
@@ -68,47 +71,10 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Desired Depth</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QDoubleSpinBox" name="desired_depth_double_spin_box">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="decimals">
-          <number>2</number>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="2">
-        <widget class="QCheckBox" name="desired_depth_checkbox">
+       <item row="3" column="2">
+        <widget class="QCheckBox" name="desired_heading_checkbox">
          <property name="text">
           <string>Enable </string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QPushButton" name="set_heading_button">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Set</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="3">
-        <widget class="QPushButton" name="set_depth_button">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Set</string>
          </property>
         </widget>
        </item>

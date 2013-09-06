@@ -1,12 +1,12 @@
 <package>
-  <name>rqt_autopilot</name>
+  <name>rqt_(>>>APP-NAME<<<)</name>
   <version>0.3.0</version>
-  <description>rqt_autopilot provides a GUI plugin for setting autopilot set points.</description>
+  <description>rqt_(>>>APP-NAME<<<) provides a GUI plugin</description>
   <maintainer email="demarco@gatech.edu">Kevin DeMarco</maintainer>
 
   <license>BSD</license>
 
-  <!--<url type="website">http://ros.org/wiki/rqt_autopilot</url>
+  <!--<url type="website">http://ros.org/wiki/rqt_(>>>APP-NAME<<<)</url>
   <url type="repository">https://github.com/ros-visualization/rqt_common_plugins</url>
   <url type="bugtracker">https://github.com/ros-visualization/rqt_common_plugins/issues</url> -->
 
@@ -14,18 +14,13 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>image_transport</build_depend>
+  
+  <build_depend>std_msgs</build_depend>
   <build_depend>rqt_gui</build_depend>
   <build_depend>rqt_gui_cpp</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>videoray</build_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>image_transport</run_depend>
   <run_depend>rqt_gui</run_depend>
   <run_depend>rqt_gui_cpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>videoray</run_depend>
+  <run_depend>std_msgs</run_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>

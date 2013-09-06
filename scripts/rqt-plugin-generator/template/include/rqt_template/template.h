@@ -30,14 +30,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef rqt_autopilot__Autopilot_H
-#define rqt_autopilot__Autopilot_H
+#ifndef rqt_(>>>APP-NAME<<<)__(>>>APP-NAME<<<)_H
+#define rqt_(>>>APP-NAME<<<)__(>>>APP-NAME<<<)_H
 
 // ROS headers
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <std_msgs/Int32.h>
-#include <videoray/DesiredTrajectory.h>
 
 // Qt headers
 #include <QImage>
@@ -48,14 +47,14 @@
 #include <QWidget>
 
 // Qt widget header
-#include <ui_autopilot.h>
+#include <ui_(>>>APP-NAME<<<).h>
 
 // STL headers
 #include <vector>
 
-namespace rqt_autopilot {
+namespace rqt_(>>>APP-NAME<<<) {
 
-     class Autopilot
+     class (>>>APP-NAME<<<)
           : public rqt_gui_cpp::Plugin
      {
 
@@ -65,7 +64,7 @@ namespace rqt_autopilot {
           
      public:
 
-          Autopilot();
+          (>>>APP-NAME<<<)();
 
           virtual void initPlugin(qt_gui_cpp::PluginContext& context);
 
@@ -83,27 +82,22 @@ namespace rqt_autopilot {
 
           protected slots:
 
-          //virtual void onDesiredHeadingChanged(double value);          
-          virtual void onEnableDesiredHeading(bool checked);
-          virtual void onEnableDesiredDepth(bool checked);
-
+          virtual void onEnableDesiredHeading(bool checked);          
           virtual void onSetHeading(bool checked);
-          virtual void onSetDepth(bool checked);
-
+          
      protected:
 
           virtual void callbackNum(const std_msgs::Int32ConstPtr& msg);
           
-          Ui::AutopilotWidget ui_;
+          Ui::(>>>APP-NAME<<<)Widget ui_;
 
           QWidget* widget_;
 
           ros::Publisher publisher_;
           ros::Subscriber subscriber_;
 
-          videoray::DesiredTrajectory desired_;
      };
 
 }
 
-#endif // rqt_autopilot__Autopilot_H
+#endif // rqt_(>>>APP-NAME<<<)__(>>>APP-NAME<<<)_H

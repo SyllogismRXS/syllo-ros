@@ -35,6 +35,8 @@ add_definitions(${EIGEN_DEFINITIONS})
 add_message_files(
   FILES
   Throttle.msg
+  DesiredTrajectory.msg
+  AccessoryControl.msg
   )
 
 ## Generate services in the 'srv' folder
@@ -75,9 +77,6 @@ include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-
-message("+++++++=============")
-message(${catkin_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(videoray
