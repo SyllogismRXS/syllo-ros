@@ -83,7 +83,6 @@ namespace rqt_autopilot {
 
           protected slots:
 
-          //virtual void onDesiredHeadingChanged(double value);          
           virtual void onEnableDesiredHeading(bool checked);
           virtual void onEnableDesiredDepth(bool checked);
 
@@ -92,18 +91,13 @@ namespace rqt_autopilot {
 
      protected:
 
-          virtual void callbackNum(const std_msgs::Int32ConstPtr& msg);
-          
           Ui::AutopilotWidget ui_;
 
           QWidget* widget_;
 
-          ros::Publisher publisher_;
-          ros::Subscriber subscriber_;
-
+          ros::Publisher desired_pub_;
           videoray::DesiredTrajectory desired_;
      };
-
 }
 
 #endif // rqt_autopilot__Autopilot_H

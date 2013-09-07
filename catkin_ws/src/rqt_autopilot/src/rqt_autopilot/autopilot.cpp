@@ -68,14 +68,11 @@ namespace rqt_autopilot {
           connect(ui_.desired_depth_checkbox, SIGNAL(toggled(bool)), this, SLOT(onEnableDesiredDepth(bool)));
 
           // Connect change of value in double spin box to function call
-          //connect(ui_.desired_heading_double_spin_box, SIGNAL(valueChanged(double)), this, SLOT(onDesiredHeadingChanged(double)));
           connect(ui_.set_heading_button, SIGNAL(clicked(bool)), this, SLOT(onSetHeading(bool)));
           connect(ui_.set_depth_button, SIGNAL(clicked(bool)), this, SLOT(onSetDepth(bool)));
           
-
-          // Create publish and subscriber example
-          this->publisher_ = getNodeHandle().advertise<std_msgs::String>("hello_dude", 1000);
-          this->subscriber_ = getNodeHandle().subscribe<std_msgs::Int32>("WRITE_HERE", 1, &Autopilot::callbackNum, this);         
+          // Create publisher
+          this->desired_pub_ = getNodeHandle().advertise<videoray::DesiredTrajectory>("desired_trajectory", 1000);
      }
      
 
@@ -86,8 +83,7 @@ namespace rqt_autopilot {
 
      void Autopilot::shutdownPlugin()
      {
-          subscriber_.shutdown();
-          publisher_.shutdown();
+          desired_pub_.shutdown();
      }
      
      void Autopilot::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
@@ -105,58 +101,48 @@ namespace rqt_autopilot {
           ui_.desired_depth_double_spin_box->setValue(desired_depth);
      }
      
-     //void Autopilot::onDesiredHeadingChanged(double value)
-     //{
-     //     std::ostringstream str;
-     //     str << value;          
-     //
-     //     std_msgs::String msg;
-     //     msg.data = "Desired Heading set: " + str.str();
-     //     publisher_.publish(msg);
-     //
-     //     std::cout << "Debug! "<< msg.data << std::endl;
-     //
-     //}
-
      void Autopilot::onSetHeading(bool checked)
      {
-          std::ostringstream str;
-          str << ui_.desired_heading_double_spin_box->value();
+          // Enable the heading controller
+          desired_.heading_enabled = true;
           
-          std_msgs::String msg;
-          msg.data = "Desired Heading set: " + str.str();
-          publisher_.publish(msg);
-          
-          std::cout << "Heading: "<< msg.data << std::endl;          
+          // Get value of heading
+          desired_.heading = ui_.desired_heading_double_spin_box->value();
+          desired_pub_.publish(desired_);
      }
 
      void Autopilot::onSetDepth(bool checked)
      {
-          std::ostringstream str;
-          str << ui_.desired_heading_double_spin_box->value();
-          
-          std_msgs::String msg;
-          msg.data = "Desired Depth set: " + str.str();
-          publisher_.publish(msg);
-          
-          std::cout << "Depth: "<< msg.data << std::endl;
+          // Enable the depth controller
+          desired_.depth_enabled = true;
+
+          // Save the value of the desired depth
+          desired_.depth = ui_.desired_depth_double_spin_box->value();
+          desired_pub_.publish(desired_);
      }
 
      void Autopilot::onEnableDesiredHeading(bool checked)
      {
           ui_.desired_heading_double_spin_box->setEnabled(checked);
-          ui_.set_heading_button->setEnabled(checked);          
+          ui_.set_heading_button->setEnabled(checked);
+
+          if (!checked) {
+               // Disable controller
+               desired_.heading_enabled = false;
+               desired_pub_.publish(desired_);
+          }
      }
 
      void Autopilot::onEnableDesiredDepth(bool checked)
      {
           ui_.desired_depth_double_spin_box->setEnabled(checked);
           ui_.set_depth_button->setEnabled(checked);          
-     }     
 
-     void Autopilot::callbackNum(const std_msgs::Int32ConstPtr& msg)
-     {
-          cout << "Received: " << msg->data << endl;
+          if (!checked) {
+               // Disable controller
+               desired_.depth_enabled = false;
+               desired_pub_.publish(desired_);
+          }
      }     
 }
 
