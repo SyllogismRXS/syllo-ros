@@ -1,10 +1,10 @@
-<library path="lib/librqt_compass">
-  <class name="rqt_compass/compass" type="rqt_compass::compass" base_class_type="rqt_gui_cpp::Plugin">
+<library path="lib/librqt_rov_status">
+  <class name="rqt_rov_status/rov_status" type="rqt_rov_status::rov_status" base_class_type="rqt_gui_cpp::Plugin">
     <description>
       A GUI plugin.
     </description>
     <qtgui>
-      <label>Compass</label>
+      <label>ROV Status</label>
       <icon type="theme">image-x-generic</icon>
       <statustip>A GUI plugin.</statustip>
     </qtgui>
