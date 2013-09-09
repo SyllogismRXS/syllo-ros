@@ -37,6 +37,7 @@
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <std_msgs/Int32.h>
+#include <geometry_msgs/PoseStamped.h>
 
 // Qt headers
 #include <QImage>
@@ -45,6 +46,11 @@
 #include <QString>
 #include <QSize>
 #include <QWidget>
+
+// Qwt headers
+#include <qwt_compass.h>
+#include <qwt_compass_rose.h>
+#include <qwt_dial_needle.h>
 
 // Qt widget header
 #include <ui_compass.h>
@@ -87,15 +93,17 @@ namespace rqt_compass {
           
      protected:
 
-          virtual void callbackNum(const std_msgs::Int32ConstPtr& msg);
+          virtual void callback_pose(const geometry_msgs::PoseStampedConstPtr& msg);
           
           Ui::compassWidget ui_;
 
           QWidget* widget_;
 
-          ros::Publisher publisher_;
+          //ros::Publisher publisher_;
           ros::Subscriber subscriber_;
 
+          QwtSimpleCompassRose *rose_;
+          QwtCompassMagnetNeedle *needle_;
      };
 
 }

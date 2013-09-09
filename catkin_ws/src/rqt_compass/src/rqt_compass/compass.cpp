@@ -34,8 +34,12 @@
 
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Quaternion.h>
 
 #include <rqt_compass/compass.h>
+
+#include <syllo_common/Orientation.h>
 
 #include <QMessageBox>
 #include <QPainter>
@@ -49,9 +53,9 @@ namespace rqt_compass {
           : rqt_gui_cpp::Plugin()
           , widget_(0)
      {
-          setObjectName("compass");
+          setObjectName("Compass");
      }
-
+    
      void compass::initPlugin(qt_gui_cpp::PluginContext& context)
      {
           widget_ = new QWidget();
@@ -62,17 +66,15 @@ namespace rqt_compass {
                widget_->setWindowTitle(widget_->windowTitle() + " (" + QString::number(context.serialNumber()) + ")");
           }
           context.addWidget(widget_);
-
-          // Enable / disable Heading/Depth checkboxes
-          connect(ui_.desired_heading_checkbox, SIGNAL(toggled(bool)), this, SLOT(onEnableDesiredHeading(bool)));
           
-          // Connect change of value in double spin box to function call
-          //connect(ui_.desired_heading_double_spin_box, SIGNAL(valueChanged(double)), this, SLOT(onDesiredHeadingChanged(double)));
-          connect(ui_.set_heading_button, SIGNAL(clicked(bool)), this, SLOT(onSetHeading(bool)));
           
-          // Create publish and subscriber example
-          this->publisher_ = getNodeHandle().advertise<std_msgs::String>("HELLO_WORLD", 1000);
-          this->subscriber_ = getNodeHandle().subscribe<std_msgs::Int32>("WRITE_HERE", 1, &compass::callbackNum, this);         
+          rose_ = new QwtSimpleCompassRose( 4, 1 );
+          needle_ = new QwtCompassMagnetNeedle();
+          ui_.Compass->setRose(rose_);
+          ui_.Compass->setNeedle(needle_);
+                    
+          // Create subscriber
+          this->subscriber_ = getNodeHandle().subscribe<geometry_msgs::PoseStamped>("pose", 1, &compass::callback_pose, this);
      }
      
 
@@ -82,44 +84,51 @@ namespace rqt_compass {
      }
 
      void compass::shutdownPlugin()
-     {
+     {              
           subscriber_.shutdown();
-          publisher_.shutdown();
      }
      
      void compass::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
      {
-          instance_settings.setValue("desired_heading", ui_.desired_heading_double_spin_box->value());
+          //instance_settings.setValue("desired_heading", ui_.desired_heading_double_spin_box->value());
      }
 
      void compass::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
      {
-          double desired_heading = instance_settings.value("desired_heading", ui_.desired_heading_double_spin_box->value()).toDouble();
-          ui_.desired_heading_double_spin_box->setValue(desired_heading);
-          
+          //double desired_heading = instance_settings.value("desired_heading", ui_.desired_heading_double_spin_box->value()).toDouble();
+          //ui_.desired_heading_double_spin_box->setValue(desired_heading);          
      }
      
      void compass::onSetHeading(bool checked)
      {
-          std::ostringstream str;
-          str << ui_.desired_heading_double_spin_box->value();
-          
-          std_msgs::String msg;
-          msg.data = "Desired Heading set: " + str.str();
-          publisher_.publish(msg);
-          
-          std::cout << "Heading: "<< msg.data << std::endl;          
+          //std::ostringstream str;
+          //str << ui_.desired_heading_double_spin_box->value();
+          //
+          //std_msgs::String msg;
+          //msg.data = "Desired Heading set: " + str.str();
+          //publisher_.publish(msg);
+          //
+          //std::cout << "Heading: "<< msg.data << std::endl;          
      }
 
      void compass::onEnableDesiredHeading(bool checked)
      {
-          ui_.desired_heading_double_spin_box->setEnabled(checked);
-          ui_.set_heading_button->setEnabled(checked);          
+          //ui_.desired_heading_double_spin_box->setEnabled(checked);
+          //ui_.set_heading_button->setEnabled(checked);          
      }
 
-     void compass::callbackNum(const std_msgs::Int32ConstPtr& msg)
+     void compass::callback_pose(const geometry_msgs::PoseStampedConstPtr& msg)
      {
-          cout << "Received: " << msg->data << endl;
+          geometry_msgs::Quaternion orientation = msg->pose.orientation;
+
+          double roll, pitch, yaw;
+          
+          quaternionToEuler_xyzw(orientation.x, orientation.y, 
+                                 orientation.z, orientation.w,
+                                 roll, pitch, yaw);
+          
+          ui_.Compass->setValue(yaw);
+          ui_.heading_spinbox->setValue(yaw);
      }     
 }
 

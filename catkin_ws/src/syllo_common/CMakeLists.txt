@@ -68,7 +68,9 @@ include_directories(
 
 ## Declare a cpp library
 add_library(syllo_common
-  src/SylloNode.cpp
+  src/syllo_common/SylloNode.cpp
+  src/syllo_common/Orientation.cpp
+  src/syllo_common/Filter.cpp
   #src/${PROJECT_NAME}/syllo_common.cpp
   )
 

@@ -37,6 +37,7 @@ add_message_files(
   Throttle.msg
   DesiredTrajectory.msg
   AccessoryControl.msg
+  Status.msg
   )
 
 ## Generate services in the 'srv' folder

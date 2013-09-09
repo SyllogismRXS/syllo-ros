@@ -2,7 +2,7 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/Joy.h"
 #include "Joystick.h"
-#include <SylloNode.h>
+#include <syllo_common/SylloNode.h>
 
 #include <sstream>
 
