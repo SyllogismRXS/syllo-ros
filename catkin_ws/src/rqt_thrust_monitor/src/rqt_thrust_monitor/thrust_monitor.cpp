@@ -34,6 +34,7 @@
 
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
+#include <videoray/Throttle.h>
 
 #include <rqt_thrust_monitor/thrust_monitor.h>
 
@@ -63,16 +64,7 @@ namespace rqt_thrust_monitor {
           }
           context.addWidget(widget_);
 
-          //// Enable / disable Heading/Depth checkboxes
-          //connect(ui_.desired_heading_checkbox, SIGNAL(toggled(bool)), this, SLOT(onEnableDesiredHeading(bool)));
-          //
-          //// Connect change of value in double spin box to function call
-          ////connect(ui_.desired_heading_double_spin_box, SIGNAL(valueChanged(double)), this, SLOT(onDesiredHeadingChanged(double)));
-          //connect(ui_.set_heading_button, SIGNAL(clicked(bool)), this, SLOT(onSetHeading(bool)));
-          //
-          //// Create publish and subscriber example
-          //this->publisher_ = getNodeHandle().advertise<std_msgs::String>("HELLO_WORLD", 1000);
-          //this->subscriber_ = getNodeHandle().subscribe<std_msgs::Int32>("WRITE_HERE", 1, &thrust_monitor::callbackNum, this);         
+          this->subscriber_ = getNodeHandle().subscribe<videoray::Throttle>("/throttle_cmd", 1, &thrust_monitor::callback_throttle, this);
      }
      
 
@@ -83,8 +75,7 @@ namespace rqt_thrust_monitor {
 
      void thrust_monitor::shutdownPlugin()
      {
-          //subscriber_.shutdown();
-          //publisher_.shutdown();
+          subscriber_.shutdown();
      }
      
      void thrust_monitor::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const
@@ -95,31 +86,19 @@ namespace rqt_thrust_monitor {
      void thrust_monitor::restoreSettings(const qt_gui_cpp::Settings& plugin_settings, const qt_gui_cpp::Settings& instance_settings)
      {
           //double desired_heading = instance_settings.value("desired_heading", ui_.desired_heading_double_spin_box->value()).toDouble();
-          //ui_.desired_heading_double_spin_box->setValue(desired_heading);
+          //ui_.desired_heading_double_spin_box->setValue(desired_heading);          
+     }
           
-     }
-     
-     void thrust_monitor::onSetHeading(bool checked)
+     void thrust_monitor::callback_throttle(const videoray::ThrottleConstPtr& msg)
      {
-          //std::ostringstream str;
-          //str << ui_.desired_heading_double_spin_box->value();
-          //
-          //std_msgs::String msg;
-          //msg.data = "Desired Heading set: " + str.str();
-          //publisher_.publish(msg);
-          //
-          //std::cout << "Heading: "<< msg.data << std::endl;          
-     }
+          ui_.port_slider->setValue(msg->PortInput);
+          ui_.port_spinbox->setValue(msg->PortInput);
 
-     void thrust_monitor::onEnableDesiredHeading(bool checked)
-     {
-          //ui_.desired_heading_double_spin_box->setEnabled(checked);
-          //ui_.set_heading_button->setEnabled(checked);          
-     }
+          ui_.vert_slider->setValue(msg->VertInput);
+          ui_.vert_spinbox->setValue(msg->VertInput);
 
-     void thrust_monitor::callbackNum(const std_msgs::Int32ConstPtr& msg)
-     {
-          //cout << "Received: " << msg->data << endl;
+          ui_.star_slider->setValue(msg->StarInput);
+          ui_.star_spinbox->setValue(msg->StarInput);
      }     
 }
 

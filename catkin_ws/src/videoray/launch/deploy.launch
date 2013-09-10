@@ -11,11 +11,7 @@
   <group ns="joystick_ns">
     <node pkg="input" name="joystick_1" type="joystick" output="screen"/>
   </group>
-
-  <group ns="rqt_ns">
-    <node pkg="rqt_compass" name="rqt_compass_1" type="rqt_compass"/>
-  </group>
-
+  
   <node pkg="rosbag" type="record" name="rosbag_record_videoray"
       args="-a -o /tmp/videoray-ros-data"
       if="$(arg record_videoray)" />

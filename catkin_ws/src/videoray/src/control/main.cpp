@@ -9,6 +9,7 @@
 #include <syllo_common/SylloNode.h>
 #include <syllo_common/Orientation.h>
 #include "sensor_msgs/Joy.h"
+#include "videoray/Throttle.h"
 
 #include <sstream>
 
@@ -68,6 +69,8 @@ int main(int argc, char **argv)
 
      ros::Subscriber joystick_sub_ = n_.subscribe<>("/joystick", 1, callback_joystick);
      ros::Publisher pose_pub_ = n_.advertise<geometry_msgs::PoseStamped>("/pose", 1);     
+     ros::Publisher pose_only_pub_ = n_.advertise<geometry_msgs::Pose>("/pose_only", 1);     
+     ros::Publisher throttle_pub_ = n_.advertise<videoray::Throttle>("/throttle_cmd", 1);
      
      geometry_msgs::PoseStamped pose_stamped_;
      
@@ -152,8 +155,16 @@ int main(int argc, char **argv)
                                  quat.x, quat.y, quat.z, quat.w);
           
           pose_stamped_.pose.orientation = quat;
-
+          
+          // Publish pose stamped and regular pose for rqt_pose_view
           pose_pub_.publish(pose_stamped_);
+          pose_only_pub_.publish(pose_stamped_.pose);
+          
+          videoray::Throttle throttle;
+          throttle.PortInput = port_thrust_;
+          throttle.StarInput = star_thrust_;
+          throttle.VertInput = vert_thrust_;
+          throttle_pub_.publish(throttle);
 
           //cout << "------------------------------------" << endl;
           //cout << "Heading: " << comm.heading() << endl;

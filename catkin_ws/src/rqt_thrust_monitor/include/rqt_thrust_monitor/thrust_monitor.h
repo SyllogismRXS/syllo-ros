@@ -37,6 +37,7 @@
 #include <ros/ros.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <std_msgs/Int32.h>
+#include <videoray/Throttle.h>
 
 // Qt headers
 #include <QImage>
@@ -82,20 +83,15 @@ namespace rqt_thrust_monitor {
 
           protected slots:
 
-          virtual void onEnableDesiredHeading(bool checked);          
-          virtual void onSetHeading(bool checked);
-          
      protected:
 
-          virtual void callbackNum(const std_msgs::Int32ConstPtr& msg);
-          
+          virtual void callback_throttle(const videoray::ThrottleConstPtr& msg);
+
           Ui::thrust_monitorWidget ui_;
 
           QWidget* widget_;
 
-          ros::Publisher publisher_;
           ros::Subscriber subscriber_;
-
      };
 
 }
