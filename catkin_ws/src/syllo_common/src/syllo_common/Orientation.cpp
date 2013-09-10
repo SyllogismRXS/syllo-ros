@@ -22,6 +22,18 @@ void quaternionToEuler_xyzw(const double &x, const double &y,
      quaternionToEuler_q(w, x, y, z, roll, pitch, yaw);
 }
 
+void quaternionToEuler_xyzw_deg(const double &x, const double &y, 
+                       const double &z, const double &w,
+                       double &roll, double &pitch, double &yaw)
+{
+     quaternionToEuler_q(w, x, y, z, roll, pitch, yaw);
+
+     roll *= 180.0/syllo::PI;
+     pitch *= 180.0/syllo::PI;
+     yaw *= 180.0/syllo::PI;     
+}
+
+
 void eulerToQuaternion_q(const double &roll, const double &pitch, 
                        const double &yaw,
                        double &q0, double &q1, 
@@ -39,4 +51,13 @@ void eulerToQuaternion_xyzw(const double &roll, const double &pitch,
                        double &z, double &w)
 {
      eulerToQuaternion_q(roll, pitch, yaw, w, x, y, z);
+}
+
+void eulerToQuaternion_xyzw_deg(const double &roll, const double &pitch, 
+                       const double &yaw,
+                       double &x, double &y, 
+                       double &z, double &w)
+{
+     eulerToQuaternion_q(roll*syllo::PI/180, pitch*syllo::PI/180, 
+                         yaw*syllo::PI/180, w, x, y, z);     
 }

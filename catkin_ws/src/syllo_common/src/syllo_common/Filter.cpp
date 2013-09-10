@@ -4,6 +4,11 @@
 using std::cout;
 using std::endl;
 
+double invert_sign(double input)
+{
+     return -1*input;
+}
+
 double saturate(double input, const double &min, const double &max)
 {
      if (min > max) {

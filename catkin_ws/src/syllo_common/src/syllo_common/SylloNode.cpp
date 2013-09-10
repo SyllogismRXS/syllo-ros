@@ -11,19 +11,22 @@ SylloNode::SylloNode()
 
 int SylloNode::init()
 {
+     namespace_ = ros::this_node::getNamespace();
+     node_name_ = ros::this_node::getName();     
 
      ros::param::param<int>("tick_rate", tick_rate_, 100);     
      ros_tick_rate_ = new ros::Rate(tick_rate_);
      
-     std::cout << "================================" << endl;
-     std::cout << "               _ _         " << std::endl; 
-     std::cout << "     ___ _   _| | | ___    " << std::endl;
-     std::cout << "    / __| | | | | |/ _ \\  " << std::endl;
-     std::cout << "    \\__ \\ |_| | | | (_) |" << std::endl;
-     std::cout << "    |___/\\__, |_|_|\\___/ " << std::endl; 
-     std::cout << "         |___/             " << std::endl;
-     std::cout << "================================" << endl;
-     std::cout << "Tick Rate: " << tick_rate_ << std::endl;              
+     cout << "================================" << endl;
+     cout << "               _ _         " << endl; 
+     cout << "     ___ _   _| | | ___    " << endl;
+     cout << "    / __| | | | | |/ _ \\  " << endl;
+     cout << "    \\__ \\ |_| | | | (_) |" << endl;
+     cout << "    |___/\\__, |_|_|\\___/ " << endl; 
+     cout << "         |___/             " << endl;
+     cout << "================================" << endl;
+     cout << "Node Name: " << node_name_ << endl;
+     cout << "Tick Rate: " << tick_rate_ << endl;              
 
      return 0;
 }

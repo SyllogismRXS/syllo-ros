@@ -4,7 +4,7 @@
 /// @file Filter.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-09 12:51:08 syllogismrxs>
+/// Time-stamp: <2013-09-10 14:30:00 yellowin>
 ///
 /// @version 1.0
 /// Created: 09 Sep 2013
@@ -38,6 +38,8 @@
 /// The Filter class ...
 /// 
 /// ----------------------------------------------------------------------------
+
+double invert_sign(double input);
 
 double saturate(double input, const double &min, const double &max);
 

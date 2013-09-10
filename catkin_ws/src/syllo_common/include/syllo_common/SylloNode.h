@@ -4,7 +4,7 @@
 /// @file SylloNode.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-04 15:40:11 syllogismrxs>
+/// Time-stamp: <2013-09-10 15:46:31 yellowin>
 ///
 /// @version 1.0
 /// Created: 04 Sep 2013
@@ -45,10 +45,15 @@ private:
 
      int tick_rate_;     
      ros::Rate *ros_tick_rate_;
+     std::string node_name_;
+     std::string namespace_;
 
 protected:
 public:
      SylloNode();
+
+     void set_node_name(const std::string &node_name);
+     const std::string & node_name();
 
      int init();
      int spin();

@@ -4,7 +4,7 @@
 /// @file Orientation.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-09 13:23:48 syllogismrxs>
+/// Time-stamp: <2013-09-10 16:16:56 yellowin>
 ///
 /// @version 1.0
 /// Created: 09 Sep 2013
@@ -39,6 +39,11 @@
 /// 
 /// ----------------------------------------------------------------------------
 
+namespace syllo
+{
+     const double PI = 3.14;
+}
+
 double saturate(double input, const double &min, const double &max);
 
 double normalize(double input, const double &in_min, const double &in_max,
@@ -54,6 +59,9 @@ void quaternionToEuler_xyzw(const double &x, const double &y,
                             const double &z, const double &w,
                             double &roll, double &pitch, double &yaw);
 
+void quaternionToEuler_xyzw_deg(const double &x, const double &y, 
+                                const double &z, const double &w,
+                                double &roll, double &pitch, double &yaw);
 
 void eulerToQuaternion_q(const double &roll, const double &pitch, 
                        const double &yaw,
@@ -64,5 +72,11 @@ void eulerToQuaternion_xyzw(const double &roll, const double &pitch,
                             const double &yaw,
                             double &x, double &y, 
                             double &z, double &w);
+
+void eulerToQuaternion_xyzw_deg(const double &roll, const double &pitch, 
+                                const double &yaw,
+                                double &x, double &y, 
+                                double &z, double &w);
+
 
 #endif

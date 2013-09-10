@@ -2,80 +2,78 @@
 #include <fstream>
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Quaternion.h>
 #include "VideoRayComm.h"
-#include "Joystick.h"
+#include <syllo_common/Filter.h>
+#include <syllo_common/SylloNode.h>
+#include <syllo_common/Orientation.h>
+#include "sensor_msgs/Joy.h"
 
 #include <sstream>
 
 using std::cout;
 using std::endl;
 
-// Assumes that input has already been saturated within the in_min and in_max
-// boundaries. Use the saturate() function on input before calling normalize
-double normalize(double input, const double &in_min, const double &in_max,
-                 const double &out_min, const double &out_max)
+int *axis_;
+int *button_;
+int num_of_buttons_ = -1;
+int num_of_axes_ = -1;
+bool joystick_enabled_ = false;
+
+void callback_joystick(const sensor_msgs::JoyConstPtr& msg)
 {
-     if (in_min >= in_max || out_min >= out_max) {
-          ROS_INFO("normalize(): Invalid Min / Max Combo");
-          return 0;
+     // Check for change in number of buttons
+     int num_of_buttons = msg->buttons.size();
+     if (num_of_buttons != num_of_buttons_) {
+          num_of_buttons_ = num_of_buttons;
+          if (button_ != NULL) {
+               delete[] button_;
+          }
+          button_ = new int[num_of_buttons_];
      }
 
-     double ratio = input / (in_max - in_min);
-     return ratio * (out_max - out_min);
-
-     return input;
-}
-
-double invert_sign(double input)
-{
-     return -1*input;
-}
-
-double saturate(double input, const double &min, const double &max)
-{
-     if (min > max) {
-          ROS_INFO("saturate(): Invalid Min / Max Combo");
-          return 0;
-     } else if (input < min) {
-          input = min;
-     } else if(input > max) {
-          input = max;
+     // Check for change in number of axes
+     int num_of_axes = msg->axes.size();
+     if (num_of_axes != num_of_axes_) {
+          num_of_axes_ = num_of_axes;
+          if (axis_ != NULL) {
+               delete[] axis_;
+          }
+          axis_ = new int[num_of_axes_];
      }
-     return input;
+
+     // Update button array
+     for (int i = 0 ; i < num_of_buttons; i++) {
+          button_[i] = msg->buttons[i];
+     }
+
+     // Update axis array
+     for (int i = 0 ; i < num_of_axes; i++) {
+          axis_[i] = msg->axes[i];
+     }
+     
+     joystick_enabled_ = true;
 }
 
 int main(int argc, char **argv)
-{
-     std::ofstream file;
-     file.open("data.log", std::ios::app);
-     file << "------------------------" << endl;     
+{     
 
-     ros::init(argc, argv, "talker");
-     ros::NodeHandle n;
+     ros::init(argc, argv, "videoray_control");
+     ros::NodeHandle n_;
 
-     ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
+     // Handle generic parameters for a SylloNode
+     SylloNode syllo_node_;
+     syllo_node_.init();    
 
-     ros::Rate loop_rate(100);
-
-     //VideoRayComm::Status_t status;
-     //status = VideoRayComm::failure;
+     ros::Subscriber joystick_sub_ = n_.subscribe<>("/joystick", 1, callback_joystick);
+     ros::Publisher pose_pub_ = n_.advertise<geometry_msgs::PoseStamped>("/pose", 1);     
+     
+     geometry_msgs::PoseStamped pose_stamped_;
+     
      VideoRayComm::Status_t status;
-
-     //if (status == VideoRayComm::Success) {
-     //}
-
      VideoRayComm comm;
      
-     Joystick js_;
-     int *axis_;
-     int *button_;
-     int num_of_buttons_;
-     int num_of_axis_;
-
-     js_.init("/dev/input/js0");
-     num_of_axis_ = js_.num_of_axis();
-     num_of_buttons_ = js_.num_of_buttons();     
-
      int vert_thrust_ = 0;
      int port_thrust_ = 0;
      int star_thrust_ = 0;
@@ -83,53 +81,45 @@ int main(int argc, char **argv)
      int lights_ = 0;
      int tilt_ = 0;
      int focus_ = 0;
-
-     bool started_ = false;
-     bool logging_ = false;
      
-     int count = 0;
-     while (ros::ok()) {
+     while (ros::ok()) {                   
+
+          if (joystick_enabled_) {
+
+               //cout << "Vertical: " << axis_[1] << endl;
+               vert_thrust_ = invert_sign(normalize(axis_[1], -32767, 32767, -99, 99));
+               port_thrust_ = invert_sign(normalize(axis_[3], -32767, 32767, -89, 89));
+               star_thrust_ = invert_sign(normalize(axis_[3], -32767, 32767, -89, 89));
+
+               turn_ = invert_sign(normalize(axis_[2], -32767, 32767, -89, 89));
+               port_thrust_ -= turn_;
+               star_thrust_ += turn_;
           
-          js_.update(&axis_, &button_);
-     
-          //cout << "Vertical: " << axis_[1] << endl;
-          vert_thrust_ = invert_sign(normalize(axis_[1], -32767, 32767, -99, 99));
-          port_thrust_ = invert_sign(normalize(axis_[3], -32767, 32767, -89, 89));
-          star_thrust_ = invert_sign(normalize(axis_[3], -32767, 32767, -89, 89));
+               //cout << axis_[0] << axis_[1] << axis_[2] << axis_[3] << axis_[4] << axis_[5] << endl;
 
-          turn_ = invert_sign(normalize(axis_[2], -32767, 32767, -89, 89));
-          port_thrust_ -= turn_;
-          star_thrust_ += turn_;
-          
-          //cout << axis_[0] << axis_[1] << axis_[2] << axis_[3] << axis_[4] << axis_[5] << endl;
+               tilt_ += invert_sign(normalize(axis_[5], -32767, 32767, -1, 1));
+               tilt_ = saturate(tilt_, -80, 80);
 
-          tilt_ += invert_sign(normalize(axis_[5], -32767, 32767, -1, 1));
-          tilt_ = saturate(tilt_, -80, 80);
+               focus_ += invert_sign(normalize(axis_[4], -32767, 32767, -1, 1));
+               focus_ = saturate(tilt_, -100, 100);
 
-          focus_ += invert_sign(normalize(axis_[4], -32767, 32767, -1, 1));
-          focus_ = saturate(tilt_, -100, 100);
+               if (button_[3]) {
+                    lights_ += 1;
+               } else if (button_[1]) {
+                    lights_ -= 1;
+               }
+               lights_ = saturate(lights_, 0, 63);
 
-          if (button_[3]) {
-               lights_ += 1;
-          } else if (button_[1]) {
-               lights_ -= 1;
-          }
-          lights_ = saturate(lights_, 0, 63);
+               // Reset button
+               if (button_[9]) {
+                    tilt_ = 0;
+                    focus_ = 0;
+                    lights_ = 0;
+                    port_thrust_ = 0;
+                    star_thrust_ = 0;
+                    vert_thrust_ = 0;               
+               }
 
-          if (button_[8]) {
-               logging_ = !logging_;
-          }
-
-          // Reset button
-          if (button_[9]) {
-               logging_ = false;
-               started_ = true;
-               tilt_ = 0;
-               focus_ = 0;
-               lights_ = 0;
-               port_thrust_ = 0;
-               star_thrust_ = 0;
-               vert_thrust_ = 0;               
           }
 
           status = comm.set_vertical_thruster(vert_thrust_);
@@ -138,60 +128,51 @@ int main(int argc, char **argv)
           status = comm.set_lights(lights_);
           status = comm.set_camera_tilt(tilt_);
           
-          if (started_) {
-               status = comm.send_control_command();
-               if (status != VideoRayComm::Success) {
-                    cout << "Exec Transfer Error!" << endl;
-               }
+          status = comm.send_control_command();
+          if (status != VideoRayComm::Success) {
+               cout << "Exec Transfer Error!" << endl;
+          }
                
-               if (logging_) {
-                    status = comm.send_nav_data_command();
-                    if (status != VideoRayComm::Success) {
-                         cout << "Exec Transfer Error!" << endl;
-                    }
-                    
-                    //cout << "------------------------------------" << endl;
-                    //cout << "Heading: " << comm.heading() << endl;
-                    //cout << "Pitch: " << comm.pitch() << endl;
-                    //cout << "Roll: " << comm.roll() << endl;
-                    //cout << "Depth: " << comm.depth() << endl;
-                    //cout << "Yaw Accel: " << comm.yaw_accel() << endl;
-                    //cout << "Pitch Accel: " << comm.pitch_accel() << endl;
-                    //cout << "Roll Accel: " << comm.roll_accel() << endl;
-                    //cout << "Surge Accel: " << comm.surge_accel() << endl;
-                    //cout << "Sway Accel: " << comm.sway_accel() << endl;
-                    //cout << "Heave Accel: " << comm.heave_accel() << endl;
-                    
-                    file << comm.heading() << endl;
-
-               }
+          status = comm.send_nav_data_command();
+          if (status != VideoRayComm::Success) {
+               cout << "Exec Transfer Error!" << endl;
           }
 
+          // Time stamp the message
+          pose_stamped_.header.stamp = ros::Time().now();
+
+          // Populate x,y,z positions
+          pose_stamped_.pose.position.x = 0;
+          pose_stamped_.pose.position.y = 0;
+          pose_stamped_.pose.position.z = comm.depth();
+                    
+          // Populate the orientation
+          geometry_msgs::Quaternion quat;
+          eulerToQuaternion_xyzw_deg(comm.roll(), comm.pitch(), comm.heading(),
+                                 quat.x, quat.y, quat.z, quat.w);
           
-          //cout << "Count: " << count << endl;
-          //status = comm.set_desired_heading(count);
-          //if (status != VideoRayComm::Success) {
-          //     cout << "Error detected!" << endl;
+          pose_stamped_.pose.orientation = quat;
+
+          pose_pub_.publish(pose_stamped_);
+
+          //cout << "------------------------------------" << endl;
+          //cout << "Heading: " << comm.heading() << endl;
+          //cout << "Pitch: " << comm.pitch() << endl;
+          //cout << "Roll: " << comm.roll() << endl;
+          //cout << "Depth: " << comm.depth() << endl;
+          //cout << "Yaw Accel: " << comm.yaw_accel() << endl;
+          //cout << "Pitch Accel: " << comm.pitch_accel() << endl;
+          //cout << "Roll Accel: " << comm.roll_accel() << endl;
+          //cout << "Surge Accel: " << comm.surge_accel() << endl;
+          //cout << "Sway Accel: " << comm.sway_accel() << endl;
+          //cout << "Heave Accel: " << comm.heave_accel() << endl;                    
           //}
           
-          //std_msgs::String msg;
-          //
-          //std::stringstream ss;
-          //ss << "hello world " << count;
-          //msg.data = ss.str();
-          //
-          //ROS_INFO("%s", msg.data.c_str());
-          //
-          //chatter_pub.publish(msg);
-
-          ros::spinOnce();
-
-          loop_rate.sleep();
-          ++count;
+          syllo_node_.spin();
      }
-     
-     cout << "Closing log file" << endl;
-     file.close();
+
+     // Clean up syllo node
+     syllo_node_.cleanup();
 
      return 0;
 }

@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation 
   sensor_msgs 
   cv_bridge
+  syllo_common
 )
 
 find_package(Eigen REQUIRED)
@@ -64,7 +65,7 @@ generate_messages(
 catkin_package(
    INCLUDE_DIRS include
 #  LIBRARIES videoray
-   CATKIN_DEPENDS roscpp std_msgs serial
+   CATKIN_DEPENDS roscpp std_msgs serial syllo_common sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -96,8 +97,7 @@ add_executable(cam_sim src/sim/cam_sim.cpp)
 add_executable(control 
   src/control/main.cpp 
   src/comm/Packetizer.cpp 
-  src/comm/VideoRayComm.cpp
-  src/control/Joystick.cpp
+  src/comm/VideoRayComm.cpp  
   )
 
 ## Add cmake target dependencies of the executable/library

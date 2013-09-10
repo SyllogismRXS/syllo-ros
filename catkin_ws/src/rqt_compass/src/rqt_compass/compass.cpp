@@ -74,7 +74,7 @@ namespace rqt_compass {
           ui_.Compass->setNeedle(needle_);
                     
           // Create subscriber
-          this->subscriber_ = getNodeHandle().subscribe<geometry_msgs::PoseStamped>("pose", 1, &compass::callback_pose, this);
+          this->subscriber_ = getNodeHandle().subscribe<geometry_msgs::PoseStamped>("/pose", 1, &compass::callback_pose, this);
      }
      
 
@@ -123,10 +123,10 @@ namespace rqt_compass {
 
           double roll, pitch, yaw;
           
-          quaternionToEuler_xyzw(orientation.x, orientation.y, 
+          quaternionToEuler_xyzw_deg(orientation.x, orientation.y, 
                                  orientation.z, orientation.w,
                                  roll, pitch, yaw);
-          
+
           ui_.Compass->setValue(yaw);
           ui_.heading_spinbox->setValue(yaw);
      }     
