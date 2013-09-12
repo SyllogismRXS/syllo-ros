@@ -9,6 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/")
+find_package(Stage REQUIRED)
+
+
+#message("=====>    <=========")
+#message(${Stage_INCLUDE_DIRS})
+#message(${Stage_LIBRARIES})
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -67,6 +75,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${Stage_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -84,6 +93,7 @@ add_dependencies(syllo_stage syllo_stage_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(syllo_stage
    ${catkin_LIBRARIES}
+   ${Stage_LIBRARIES}
 )
 
 #############
