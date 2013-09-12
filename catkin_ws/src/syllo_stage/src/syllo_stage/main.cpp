@@ -1,36 +1,216 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <sstream>
+#include <iostream>
+#include <cmath>
+
+#include "ros/ros.h"
+#include "std_msgs/String.h"
 #include <Stage-4.1/stage.hh>
+
+#include <FL/Fl.H>
+
+using std::cout;
+using std::endl;
+
+class Robot
+{
+public:
+     Stg::ModelPosition* position;
+     Stg::ModelRanger* ranger;
+};
+
+class Logic
+{
+public:
+     static int Callback(Stg::World* world, void* userarg)
+          {
+               Logic* lg = reinterpret_cast<Logic*>(userarg);
+        
+               lg->Tick(world);
+        
+               // never remove this call-back
+               return 0;
+          }
+    
+     Logic(unsigned int popsize)
+          : 
+          population_size(popsize),
+          robots(new Robot[population_size])
+          {
+
+          }
+    
+     void connect(Stg::World* world)
+          {
+               // connect the first population_size robots to this controller
+               for(unsigned int idx = 0; idx < population_size; idx++)
+               {
+                    // the robots' models are named r0 .. r1999
+                    std::stringstream name;
+                    name << "r" << idx;
+            
+                    // get the robot's model and subscribe to it
+                    Stg::ModelPosition* posmod = reinterpret_cast<Stg::ModelPosition*>(
+                         world->GetModel(name.str())
+                         );
+                    assert(posmod != 0);
+            
+                    robots[idx].position = posmod;
+                    robots[idx].position->Subscribe();
+            
+                    // get the robot's ranger model and subscribe to it
+                    Stg::ModelRanger* rngmod = reinterpret_cast<Stg::ModelRanger*>(
+                         robots[idx].position->GetChild( "ranger:0" )
+                         );
+                    assert(rngmod != 0);
+            
+                    robots[idx].ranger = rngmod;
+                    robots[idx].ranger->Subscribe();
+               }
+        
+               // register with the world
+               world->AddUpdateCallback(Logic::Callback, reinterpret_cast<void*>(this));    
+          }
+    
+     ~Logic()
+          {
+               delete[] robots;
+          }
+    
+
+     void Tick(Stg::World*)
+          {
+               // the controllers parameters
+               const double vspeed = 0.4; // meters per second
+               const double wgain  = 1.0; // turn speed gain
+               const double safe_dist = 0.1; // meters
+               const double safe_angle = 0.3; // radians
+    
+               // each robot has a group of ir sensors
+               // each sensor takes one sample
+               // the forward sensor is the middle sensor
+               for(unsigned int idx = 0; idx < population_size; idx++)
+               {
+                    Stg::ModelRanger* rgr = robots[idx].ranger;
+
+                    // compute the vector sum of the sonar ranges	      
+                    double dx=0, dy=0;
+
+                    // the range model has multiple sensors
+                    typedef std::vector<Stg::ModelRanger::Sensor>::const_iterator sensor_iterator;
+                    const std::vector<Stg::ModelRanger::Sensor> sensors = rgr->GetSensors();
+            
+                    for(sensor_iterator sensor = sensors.begin(); sensor != sensors.end(); sensor++)
+                    {
+                         // each sensor takes a single sample (as specified in the .world)
+                         const double srange = (*sensor).ranges[0];
+                         const double angle  = (*sensor).pose.a;
+                
+                         dx += srange * std::cos(angle);
+                         dy += srange * std::sin(angle);
+                    } 
+            
+                    if(dx == 0)
+                         continue;
+            
+                    if(dy == 0)
+                         continue;
+            
+                    // calculate the angle towards the farthest obstacle
+                    const double resultant_angle = std::atan2( dy, dx );
+
+                    // check whether the front is clear
+                    const unsigned int forward_idx = sensors.size() / 2u - 1u;
+            
+                    const double forwardm_range = sensors[forward_idx - 1].ranges[0];
+                    const double forward_range  = sensors[forward_idx + 0].ranges[0]; 
+                    const double forwardp_range = sensors[forward_idx + 1].ranges[0]; 
+            
+                    bool front_clear = (
+                         (forwardm_range > safe_dist / 5.0) &&
+                         (forward_range > safe_dist) &&
+                         (forwardp_range > safe_dist / 5.0) &&
+                         (std::abs(resultant_angle) < safe_angle)
+                         );
+            
+                    // turn the sensor input into movement commands
+
+                    // move forwards if the front is clear
+                    const double forward_speed = front_clear ? vspeed : 0.0;
+                    // do not strafe
+                    const double side_speed = 0.0;	   
+            
+                    // turn towards the farthest obstacle
+                    const double turn_speed = wgain * resultant_angle;
+            
+                    // finally, relay the commands to the robot
+                    robots[idx].position->SetSpeed( forward_speed, side_speed, turn_speed );
+               }
+          }
+    
+protected:
+     unsigned int population_size;   
+     Robot* robots;
+};
+
+void chatterCallback(const std_msgs::String::ConstPtr& msg)
+{
+     ROS_INFO("I heard: [%s]", msg->data.c_str());
+}
 
 int main(int argc, char **argv)
 {
-     Stg::World world_("MyWorld", 1);
-
-     ros::init(argc, argv, "talker");
+     // check and handle the argumets
+     if( argc < 3 ) {
+          puts( "Usage: rosrun syllo_stage syllo_stage <worldfile> <number of robots>" );
+          exit(0);
+     }
+     
+     ros::init(argc, argv, "syllo_stage");
      ros::NodeHandle n;
-     ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
+     ros::Publisher chatter_pub = n.advertise<std_msgs::String>("talk", 1000);
+     ros::Subscriber sub = n.subscribe("listen", 1000, chatterCallback);
      ros::Rate loop_rate(10);
+     
+     // Population size
+     const int popsize = atoi(argv[2]);
+     
+     // initialize libstage
+     Stg::Init( &argc, &argv );
+     
+     // create the world
+     Stg::WorldGui world(800, 700, "Stage Benchmark Program");
+     world.Load( argv[1] );
+     
+     // create the logic and connect it to the world
+     Logic logic(popsize);
+     logic.connect(&world);
+     
+     // Start the simulation (so we don't have to hit pause/start button)
+     world.Start();
 
-     int count = 0;
-     while (ros::ok()) {
+     // and then run the simulation
+     while (ros::ok() && !world.TestQuit()) {
           std_msgs::String msg;
-
           std::stringstream ss;
-          ss << "hello world " << count;
+          ss << "hello world";
           msg.data = ss.str();
-
-          ROS_INFO("%s", msg.data.c_str());
-
           chatter_pub.publish(msg);
 
           ros::spinOnce();
 
-          loop_rate.sleep();
-          ++count;
+          // Only allow the use of the GUI for now...
+          // Se world.cc lines 221-228 for example check for non-GUI
+          Fl::wait(loop_rate.expectedCycleTime().toSec());
      }
+     
+     cout << endl;
+     cout << "==================================" << endl;
+     cout << "Simulation Complete." << endl;
 
-
+     exit(0);
      return 0;
 }
