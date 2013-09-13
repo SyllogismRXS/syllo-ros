@@ -9,6 +9,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <Stage-4.1/stage.hh>
+#include "nav_msgs/Odometry.h"
+#include "geometry_msgs/Twist.h"
 
 #include <FL/Fl.H>
 
@@ -17,10 +19,74 @@ using std::endl;
 
 class Robot
 {
+private:
+protected:
+     std::string name_;
+     
+     std::string odom_topic_;
+     std::string gt_odom_topic_;
+     std::string cmd_vel_topic_;
+
+     ros::NodeHandle *n_;
+     ros::Publisher odom_pub_;
+     ros::Publisher gt_odom_pub_;
+     ros::Subscriber cmd_vel_sub_; 
+
+     nav_msgs::Odometry odom_;
+     nav_msgs::Odometry gt_odom_;
+     geometry_msgs::Twist cmd_vel_;
+
 public:
      Stg::ModelPosition* position;
      Stg::ModelRanger* ranger;
+
+     void callback_cmd_vel(const geometry_msgs::TwistConstPtr& msg)
+          {
+               cout << name_ << " X: " << msg->linear.x;
+               cmd_vel_ = *msg;
+          }
+
+     void set_name(const std::string &name)
+          {
+               name_ = name;
+          }
+     
+     void RegisterTopics(ros::NodeHandle *n)
+          {
+               n_ = n;
+               
+               odom_topic_ = "/" + name_ + "/odom";
+               gt_odom_topic_ = "/" + name_ + "/ground_truth_odom";
+               
+               odom_pub_ = n_->advertise<nav_msgs::Odometry>(odom_topic_,1);
+               gt_odom_pub_ = n_->advertise<nav_msgs::Odometry>(gt_odom_topic_,1);
+
+               cmd_vel_topic_ = "/" + name_ + "/cmd_vel";
+               cmd_vel_sub_ = n->subscribe(cmd_vel_topic_, 1, &Robot::callback_cmd_vel, this);
+          }
+
+     geometry_msgs::Twist & cmd_vel()
+          {
+               return cmd_vel_;
+          }
+
+     void publish_odometry()
+          {
+               odom_.header.stamp = ros::Time::now();
+               
+               odom_.pose.pose.position.x = position->est_pose.x;
+               odom_.pose.pose.position.y = position->est_pose.y;
+               odom_.pose.pose.position.z = position->est_pose.z;
+               odom_pub_.publish(odom_);
+
+               Stg::Pose global_pose = position->GetGlobalPose();
+               gt_odom_.pose.pose.position.x = global_pose.x;
+               gt_odom_.pose.pose.position.y = global_pose.y;
+               gt_odom_.pose.pose.position.z = global_pose.z;
+               gt_odom_pub_.publish(gt_odom_);               
+          }
 };
+
 
 class Logic
 {
@@ -43,7 +109,7 @@ public:
 
           }
     
-     void connect(Stg::World* world)
+     void connect(Stg::World* world, ros::NodeHandle * n)
           {
                // connect the first population_size robots to this controller
                for(unsigned int idx = 0; idx < population_size; idx++)
@@ -51,7 +117,9 @@ public:
                     // the robots' models are named r0 .. r1999
                     std::stringstream name;
                     name << "r" << idx;
-            
+                    
+                    robots[idx].set_name(name.str());
+
                     // get the robot's model and subscribe to it
                     Stg::ModelPosition* posmod = reinterpret_cast<Stg::ModelPosition*>(
                          world->GetModel(name.str())
@@ -69,6 +137,11 @@ public:
             
                     robots[idx].ranger = rngmod;
                     robots[idx].ranger->Subscribe();
+                    
+                    // Provide robot with ROS node handle
+                    robots[idx].RegisterTopics(n);
+                    
+
                }
         
                // register with the world
@@ -148,6 +221,10 @@ public:
             
                     // finally, relay the commands to the robot
                     robots[idx].position->SetSpeed( forward_speed, side_speed, turn_speed );
+                    
+                    // Publish robot pose to ROS
+                    robots[idx].publish_odometry();
+
                }
           }
     
@@ -156,10 +233,6 @@ protected:
      Robot* robots;
 };
 
-void chatterCallback(const std_msgs::String::ConstPtr& msg)
-{
-     ROS_INFO("I heard: [%s]", msg->data.c_str());
-}
 
 int main(int argc, char **argv)
 {
@@ -171,8 +244,6 @@ int main(int argc, char **argv)
      
      ros::init(argc, argv, "syllo_stage");
      ros::NodeHandle n;
-     ros::Publisher chatter_pub = n.advertise<std_msgs::String>("talk", 1000);
-     ros::Subscriber sub = n.subscribe("listen", 1000, chatterCallback);
      ros::Rate loop_rate(10);
      
      // Population size
@@ -187,18 +258,18 @@ int main(int argc, char **argv)
      
      // create the logic and connect it to the world
      Logic logic(popsize);
-     logic.connect(&world);
+     logic.connect(&world, &n);
      
      // Start the simulation (so we don't have to hit pause/start button)
      world.Start();
 
      // and then run the simulation
      while (ros::ok() && !world.TestQuit()) {
-          std_msgs::String msg;
-          std::stringstream ss;
-          ss << "hello world";
-          msg.data = ss.str();
-          chatter_pub.publish(msg);
+          //std_msgs::String msg;
+          //std::stringstream ss;
+          //ss << "hello world";
+          //msg.data = ss.str();
+          //chatter_pub.publish(msg);
 
           ros::spinOnce();
 
