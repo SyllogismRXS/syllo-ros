@@ -1,121 +1,53 @@
 #include <iostream>
 #include <math.h>
 
-#include "a_star.h"
+#include "path_plan/a_star.h"
+#include "path_plan/types.h"
 
 using std::cout;
 using std::endl;
 
 namespace syllo
 {
-
-     ///----------------------------------------------------------------
-     /// Point class functions
-     ///----------------------------------------------------------------
-     double Point::euclidean_distance(Point p)
-     {
-          double result;
-          result = sqrt( pow((x-p.x),2) + pow(y-p.y,2) );
-          return result;
-     }
-
-     Point operator+(const Point &p1, const Point &p2)
-     {
-          return Point(p1.x + p2.x, p1.y + p2.y);
-     }
-
-     bool Point::operator==(const Point &other) const
-     {
-          return (this->x == other.x) && (this->y == other.y);
-     }
-     
-     bool Point::operator!=(const Point &other) const
-     {
-          return !(*this == other);
-     }
-
-     bool operator<(const Point &p1, const Point &p2)
-     {
-          return (p1.x < p2.x) || (p1.x == p2.x && p1.y < p2.y);
-     }
-
-
-     ///----------------------------------------------------------------
-     /// Node class functions
-     ///----------------------------------------------------------------
-     Node::Node(Point point) : point_(point) { }
-     
-     Node::Node(int x, int y)
-     {
-          Node(Point(x,y));
-     }
-
-     bool Node::operator==(const Node &other) const
-     {
-          return (this->point_.x == other.point_.x) && 
-               (this->point_.y == other.point_.y);
-     }
-
-     bool Node::operator!=(const Node &other) const
-     {
-          return !(*this == other);
-     }
-
-     bool operator<(const Node &n1, const Node &n2)
-     {
-          return false;
-     }
-
-     void Node::compute_costs(Point goal)
-     {
-          h_ = point_.euclidean_distance(goal);
-     }
-
-     ///----------------------------------------------------------------
-     /// Map Class functions
-     ///----------------------------------------------------------------
-     void Map::set_origin(int x, int y)
-     {
-          origin_.x = x;
-          origin_.y = y;
-     }
-
-     int Map::fill_map(int *map, int rows, int cols)
-     {
-          map_ = Eigen::MatrixXi(rows, cols);
-          for (int r = 0; r < rows; r++) {
-               for (int c = 0; c < cols; c++) {
-                    map_(r,c) = map[r*cols + c];
-               }
-          }
-     }
-
-     int Map::at(int x, int y)
-     {
-          return map_(x-origin_.x, y-origin_.y);
-     }
-
-     void Map::set_at(int value, int x, int y)
-     {
-          map_(x-origin_.x, y-origin_.y) = value;
-     }
-
-     int Map::at(Point point)
-     {
-          return this->at(point.x, point.y);
-     }
-
-     void Map::set_at(int value, Point point)
-     {
-          this->set_at(value, point.x, point.y);
-     }
-
      ///----------------------------------------------------------------
      /// AStar Class functions
      ///----------------------------------------------------------------
-     int AStar::set_map(Map *map)
+     AStar::AStar()
      {
+          directions_.push_back(Direction(Direction::N,Straight,Point(0,1)));
+          directions_.push_back(Direction(Direction::NE,Diagonal,Point(1,1)));
+          directions_.push_back(Direction(Direction::E,Straight,Point(1,0)));
+          directions_.push_back(Direction(Direction::SE,Diagonal,Point(1,-1)));
+          directions_.push_back(Direction(Direction::S,Straight,Point(0,-1)));
+          directions_.push_back(Direction(Direction::SW,Diagonal,Point(-1,-1)));
+          directions_.push_back(Direction(Direction::W,Straight,Point(-1,0)));
+          directions_.push_back(Direction(Direction::NW,Diagonal,Point(-1,1)));
+     }
+
+     void AStar::reset()
+     {
+          open_.clear();
+          closed_.clear();
+          map_ = NULL;
+          path_.clear();
+     }
+
+     int AStar::set_map(Map *map)
+     {          
           map_ = map;
+          
+          // Create a Node for each element in the map
+          node_map_.resize(boost::extents[map_->x_width()][map_->y_height()]);
+          for (int x = 0 ; x < map_->x_width(); x++) {
+               for (int y = 0; y < map_->y_height(); y++) {
+                    if (node_map_[x][y] == NULL) {
+                         //cout << "creating" << endl;
+                         node_map_[x][y] = new Node(x,y);
+                    } else {
+                         node_map_[x][y]->reset();
+                    }                   
+               }
+          }
      }
 
      int AStar::generate_path(Node start, Node goal)
@@ -123,65 +55,118 @@ namespace syllo
           start_ = start;
           goal_ = goal;
 
-          // Add starting node to open list
-          start_.set_list(Node::open);
-          open_.push_back(&start_);
-     
-          // Find node in the open list with the lowest F
-          // TODO: Make this a sorted list
-          double champ = 99999;
-          std::list<Node*>::iterator champ_it;
-          std::list<Node*>::iterator it;
-          Node * node;
-          for (it = open_.begin(); it != open_.end(); it++) {
-               if ((*it)->f() < champ) {
-                    champ = (*it)->f();
-                    champ_it = it;
-                    node = *it;
-               }
+          // Ensure that start node is in map
+          if (!map_->inMap(start_.point())) {
+               return -3;
           }
 
-          // Switch the lowest cost F node from the open list
-          // to the closed list;
-          node->set_list(Node::closed);
-          closed_.push_back(node);
-          open_.erase(champ_it);
-          
-          for (int i = 0 ; i < 8; i++) {
-               Point point;
+          // Ensure that goal node is in map
+          if (!map_->inMap(goal_.point())) {
+               return -4;
+          }
 
-               switch (i) {
-               case Map::N:
-                    point = node->point() + Point(0,1);
-                    if (map_->at(point) > 50 || node->list() == Node::closed) {
+          //// Get the pointer to the starting node
+          Node *start_ptr;
+          start_ptr = node_map_[start_.point().x][start_.point().y];
+          
+          // Add starting node to the open list
+          start_ptr->set_list(Node::Open);
+          open_.push_back(start_ptr);
+
+          bool goal_reached = false;
+
+          do {
+               // If the open list is empty, we didn't find the goal node
+               if (open_.empty()) {
+                    goal_reached = false;
+                    break;
+               }
+          
+               // Grab the first item off the list (list is sorted by F cost)
+               Node *cur_node = open_.front();
+               open_.pop_front();
+          
+               // Switch the lowest cost F node from the open list
+               // to the closed list;
+               cur_node->set_list(Node::Closed);
+               closed_.push_back(cur_node);
+                         
+               // Was the last node added to the closed list the goal node?
+               if (goal_.point() == cur_node->point()) {
+                    goal_reached = true;
+                    break;
+               }
+          
+               // Loop through all directions
+               std::vector<Direction>::iterator dir_it;
+               for (dir_it = directions_.begin(); dir_it != directions_.end(); dir_it++) {
+                    Point point;
+                    Node *adj_node;
+          
+                    point = cur_node->point() + dir_it->point();
+          
+                    // Check to see if point is within the map boundary
+                    if (!map_->inMap(point)) {
+                         continue;
+                    }
+          
+                    adj_node = node_map_[point.x][point.y];
+                         
+                    if (map_->at(point) > 50 || adj_node->list() == Node::Closed) {
                          // ignore the node (not walkable, in the closed list)
                          continue;
                     }
                     
-                    if (node->list() != Node::open) {
+                    if (adj_node->list() != Node::Open) {
+                         adj_node->set_list(Node::Open);
+                         adj_node->set_parent(cur_node, dir_it->dir(), dir_it->cost());
+                         adj_node->compute_costs(cur_node->point());
+          
+                         // Add the node into the sorted open list
+                         bool node_inserted = false;
+                         std::list<Node*>::iterator it;
+                         for (it = open_.begin(); it != open_.end(); it++) {
+                              if (*adj_node < **it) {
+                                   open_.insert(it, adj_node);
+                                   node_inserted = true;
+                                   break;
+                              }
+                         }
+                         // If the node wasn't inserted in the middle of the
+                         // list, add it to the back
+                         if (!node_inserted) {
+                              open_.push_back(adj_node);
+                         }
                          
-                    }                    
-
-                    break;
-               case Map::NE:
-                    break;
-               case Map::E:
-                    break;
-               case Map::SE:
-                    break;
-               case Map::S:
-                    break;
-               case Map::SW:
-                    break;
-               case Map::W:
-                    break;
-               case Map::NW:
-                    break;
-               default:
-                    cout << "Invalid heading" << endl;
-                    break;
+                    } else {
+                         // Node is already on open list, check to see if
+                         // this path is lower cost, resort
+                         if ((cur_node->g() + dir_it->cost()) < adj_node->g()) {
+                              adj_node->set_parent(cur_node, dir_it->dir(), dir_it->cost());
+                              adj_node->compute_costs(cur_node->point());
+                              open_.sort();
+                         }
+                    }
                }
+          } while(true);                   
+
+          if (goal_reached) {
+               // Generate the path by walking backwards from the goal node
+               // to the start node
+               Node * node = node_map_[goal_.point().x][goal_.point().y];
+               do {
+                    path_.push_front(node);
+                    node = node->parent();
+               } while(node->point() != start_.point());
+
+               return 0; 
+          } else {
+               return -1;
           }
-          return 0;
+     }
+
+     std::list<Node*> & AStar::path()
+     {
+          return path_;
      }
 }

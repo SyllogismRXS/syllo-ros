@@ -2,7 +2,7 @@
 /// @file main.cpp
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-17 17:42:43 syllogismrxs>
+/// Time-stamp: <2013-09-18 21:49:58 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -52,26 +52,42 @@
 
 #include <syllo_common/Filter.h>
 
+#include "boost/multi_array.hpp"
+#include <cassert>
+
 using std::endl;
 using std::cout;
 
-cv::Mat map_;
+cv::Mat cv_map_;
 nav_msgs::MapMetaData info_;
+
+typedef boost::multi_array<int, 2> array_type;
+typedef array_type::index idx;
+array_type map_;
+
 
 void callback_map(const nav_msgs::OccupancyGridConstPtr& msg)
 {
      info_ = msg->info;
-     
-     map_ = cv::Mat(info_.height, info_.width, CV_8UC1);
-     
-     for (int r = 0; r < info_.height; r++) {
-          for (int c = 0; c < info_.width; c++) {
-               double value = msg->data[r*info_.width+c];
-               value = normalize(value, 0, 100, 0, 255);
-               map_.at<uchar>(info_.height-1-r,c) = 255 - value;
+    
+     int height = info_.height;
+     int width = info_.width;
+
+     map_.resize(boost::extents[width][height]);
+     for (int x = 0; x < width; x++) {
+          for (int y = 0; y < height; y++) {
+               map_[x][y] = msg->data[y*width + x];
           }
      }
 
+     cv_map_ = cv::Mat(height, width, CV_8UC1);     
+     for (int y = 0; y < height; y++) {
+          for (int x = 0; x < width; x++) {
+               double value = map_[x][y];
+               value = normalize(value, 0, 100, 0, 255);
+               cv_map_.at<uchar>(height-1-y,x) = 255 - value;
+          }
+     }
 }
 
 int main(int argc, char * argv[])
@@ -85,8 +101,8 @@ int main(int argc, char * argv[])
 
      while (ros::ok()) {
 
-          if (!map_.empty()) {
-               cv::imshow("Map", map_);
+          if (!cv_map_.empty()) {
+               cv::imshow("Map", cv_map_);
                cv::waitKey(1);
           }
 

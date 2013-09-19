@@ -4,14 +4,23 @@ project(path_plan)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS nav_msgs roscpp std_msgs)
+find_package(catkin REQUIRED COMPONENTS nav_msgs roscpp std_msgs syllo_common)
 
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
+
+find_package(SDL)
+find_package(SDL_image)
+
+include_directories(${SDL_INCLUDE_DIRS})
+include_directories(${SDL_image_INCLUDE_DIRS})
+
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -73,19 +82,24 @@ include_directories(
 ## Declare a cpp library
 add_library(path_plan
   src/${PROJECT_NAME}/a_star.cpp
+  src/${PROJECT_NAME}/types.cpp
   )
 
 ## Declare a cpp executable
-#add_executable(a_star src/a_star.cpp)
+add_executable(ex1 src/ex1/main.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(path_plan path_plan_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(path_plan_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(ex1
+  ${catkin_LIBRARIES}
+  path_plan
+  SDL
+  SDL_image
+  ${OpenCV_LIBRARIES}
+  )
 
 #############
 ## Install ##
