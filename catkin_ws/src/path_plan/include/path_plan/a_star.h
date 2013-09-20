@@ -4,7 +4,7 @@
 /// @file a_star.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-18 20:33:14 syllogismrxs>
+/// Time-stamp: <2013-09-20 00:32:03 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -49,7 +49,7 @@
 
 #include <Eigen/Core>
 
-#include "types.h"
+#include "path_plan/types.h"
 
 namespace syllo
 {
@@ -72,6 +72,7 @@ namespace syllo
           std::vector<Direction> directions_;
 
           std::list<Node*> path_;
+          std::list<Node*> waypts_;
 
      public:    
           AStar();
@@ -79,6 +80,7 @@ namespace syllo
           int set_map(Map *map);
           int generate_path(Node start, Node goal);
           std::list<Node*> & path();
+          std::list<Node*> & waypts();
      };
 
 }

@@ -1,10 +1,10 @@
-#ifndef TYPES_H_
-#define TYPES_H_
+#ifndef SYLLO_TYPES_H_
+#define SYLLO_TYPES_H_
 /// ----------------------------------------------------------------------------
 /// @file types.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-18 20:51:43 syllogismrxs>
+/// Time-stamp: <2013-09-20 00:47:43 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -47,6 +47,13 @@
 #include "boost/multi_array.hpp"
 #include <cassert>
 
+#include <cv.h>
+#include <highgui.h>
+
+#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 namespace syllo
 {
 
@@ -56,22 +63,90 @@ namespace syllo
           Diagonal = 14
      } Cost_t;
 
+     template <class T>
      class Point
      {
      public:
      Point() : x(-1), y(-1) { }
-     Point(int xIn, int yIn) : x(xIn), y(yIn) { }
-          int x;
-          int y;
+     Point(T xIn, T yIn) : x(xIn), y(yIn) { }
+          T x;
+          T y;
 
-          double euclidean_distance(Point p);
+          
+          double euclidean_distance(Point p)
+          {
+               double result;
+               result = sqrt( pow((x-p.x),2) + pow(y-p.y,2) );
+               return result;
+          }
+                    
+          Point<T> operator+(const Point<T> &other)
+          {
+               return Point<T>(this->x + other.x, this->y + other.y);
+          }
+          
+          Point<T> operator-(const Point<T> &other)
+          {
+               Point<T> point;
+               point.x = this->x - other.x;
+               point.y = this->y - other.y;
+               return point;
+          }
+     
+          Point<T> operator*(const double &other)
+          {
+               return Point<T>(this->x * other, this->y * other);
+          }
 
-          friend Point operator+(const Point &p1, const Point &p2);
+          Point<T> operator*(const Point<T> &other)
+          {
+               return Point<T>(this->x * other.x, this->y * other.y);
+          }
 
-          bool operator==(const Point &other) const;
-          bool operator!=(const Point &other) const;
-          friend bool operator<(const Point &p1, const Point &p2);
-     };
+          Point<T> absolute()
+          {
+               return Point<T>(abs(this->x), abs(this->y));
+          }
+
+          
+
+          //Point<double> operator+(const Point<int> &other)
+          //{
+          //     return Point<double>(this->x + (double)other.x, this->y + (double)other.x);
+          //}
+
+          //Point<double> operator-(const Point<int>
+
+          bool operator==(const Point<T> &other) const
+          {
+               return (this->x == other.x) && (this->y == other.y);
+          }
+          
+          bool operator!=(const Point<T> &other) const
+          {
+               return !(*this == other);
+          }
+          
+          bool operator<(const Point<T> &rhs)
+          {
+               return (this->p1.x < rhs.x) || (this->p1.x == rhs.x && this->p1.y < rhs.y);
+          }                    
+
+     };        
+
+     Point<double> add_points(const Point<double> &p1, const Point<int> &p2);
+     Point<double> sub_points(const Point<int> &p1, const Point<double> &p2);
+     //{
+     //     Point<double> result;
+     //     result.x = p1.x + (double)p2.x;
+     //     result.y = p1.y + (double)p2.y;
+     //     return result;
+     //}
+
+     //Point<double> operator+(const Point<double> &p1, const Point<int> &p2)
+     //{
+     //     return Point<double>(p1.x + (double)p2.x, p1.y + (double)p2.y);
+     //}
 
      class Direction {
      public:
@@ -86,15 +161,15 @@ namespace syllo
                NW
           };
           
-          Point point_;
+          Point<int> point_;
           Cost_t cost_;
           Compass dir_;
 
-          Point point() { return point_; }
+          Point<int> point() { return point_; }
           Cost_t cost() { return cost_; }
           Compass dir() { return dir_; }
 
-          Direction(Direction::Compass dir, Cost_t cost, Point point) 
+          Direction(Direction::Compass dir, Cost_t cost, Point<int> point) 
           {
                dir_ = dir;
                cost_ = cost;
@@ -113,10 +188,10 @@ namespace syllo
           };
 
           Node();
-          Node(Point point);
+          Node(Point<int> point);
           Node(int x, int y);
           void reset();
-          void compute_costs(Point goal);
+          void compute_costs(Point<int> goal);
           double g() { return g_; }
           double h() { return h_; }
           double f() { return f_; }
@@ -124,7 +199,7 @@ namespace syllo
           void set_list(List list) { list_ = list; }
           List list() { return list_; }
           
-          Point & point() { return point_; }
+          Point<int> & point() { return point_; }
 
           //bool operator==(const Node &other) const;
           //bool operator!=(const Node &other) const;
@@ -136,7 +211,7 @@ namespace syllo
           Node * parent() { return parent_; }
           
      protected:
-          Point point_;
+          Point<int> point_;
 
           double g_;
           double h_;
@@ -155,17 +230,25 @@ namespace syllo
      {
      public:          
           void set_origin(int x, int y);
-          int fill_map(const std::vector<int> &map, int x_width, int y_height);
+          int set_map(const std::vector<int> &map, int x_width, int y_height);
+          int get_map(std::vector<int> &map, int &x_width, int &y_height);
+          
+          int set_map(const cv::Mat &map);
+          int get_map(cv::Mat &map);
+
+          int set_negated_map(const cv::Mat &map);
+          int get_negated_map(cv::Mat &map);
+
           int at(int x, int y);
           void set_at(int value, int x, int y);
           
-          int at(Point point);
-          void set_at(int value, Point point);
+          int at(Point<int> point);
+          void set_at(int value, Point<int> point);
 
           int x_width() { return x_width_; }
           int y_height() { return y_height_; }
 
-          bool inMap(const Point &point);
+          bool inMap(const Point<int> &point);
           
 
      protected:
@@ -174,11 +257,11 @@ namespace syllo
           typedef array_type::index index;
           array_type map_;
      
-          //std::map<Point, Node*> node_map_;
+          //std::map<Point<int>, Node*> node_map_;
           
           int x_width_;
           int y_height_;
-          Point origin_;
+          Point<int> origin_;
           double resolution_; // (m / pixel)
 
      private:     

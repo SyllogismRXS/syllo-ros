@@ -85,6 +85,8 @@ add_library(path_plan
   src/${PROJECT_NAME}/types.cpp
   )
 
+target_link_libraries(path_plan syllo_common)
+
 ## Declare a cpp executable
 add_executable(ex1 src/ex1/main.cpp)
 

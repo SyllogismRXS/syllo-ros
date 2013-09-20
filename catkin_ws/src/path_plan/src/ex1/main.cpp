@@ -20,6 +20,9 @@
 using std::cout;
 using std::endl;
 
+int dilationElem = cv::MORPH_ELLIPSE; // MORPH_RECT, MORPH_CROSS, MORPH_ELLIPSE
+int dilationSize = 10;
+
 #define MAP_IDX(sx, i, j) ((sx) * (j) + (i))
 
 bool wait = true;
@@ -160,36 +163,35 @@ int main(int argc, char *argv[])
      do {           
           planner.reset();
    
-          syllo_map.fill_map(map, width, height);
+          syllo_map.set_map(map, width, height);
           syllo_map.set_origin(0,0);
           
           planner.set_map(&syllo_map);
-
-          // Get user input about start and end states
-          // Fill an OpenCV structure:
+          
           cv::Mat cv_map_;
-          cv_map_ = cv::Mat(height, width, CV_8UC1);     
-          for (int y = 0; y < height; y++) {
-               for (int x = 0; x < width; x++) {
-                    double value = syllo_map.at(x,y);
-                    value = normalize(value, 0, 100, 0, 255);
-                    cv_map_.at<uchar>(height-1-y,x) = 255 - value;
-               }
-          }
+          syllo_map.get_map(cv_map_);
                     
           cout << "Select initial state with mouse" << endl;
           cv::imshow("Map", cv_map_);
-          //cv::waitKey();
           waitMouse();
 
           syllo::Node start(mouse.x,height-mouse.y);
 
           cout << "Select goal state with mouse" << endl;
           cv::imshow("Map", cv_map_);
-          //cv::waitKey(1);
           waitMouse();
           
           syllo::Node goal(mouse.x, height-mouse.y);
+
+          // Dilate the map to create obstacle buffer
+          cv::Mat dilationConfig = cv::getStructuringElement( dilationElem,
+                                                              cv::Size(2*dilationSize+1, 2*dilationSize+1),
+                                                              cv::Point(dilationSize, dilationSize) );
+          cv::Mat cv_neg_map_;
+          syllo_map.get_negated_map(cv_neg_map_);
+          cv::dilate(cv_neg_map_, cv_neg_map_, dilationConfig);
+          
+          syllo_map.set_negated_map(cv_neg_map_);
 
           // Run the planner
           cout << "Planner running..." << endl;
@@ -203,12 +205,23 @@ int main(int argc, char *argv[])
           std::list<syllo::Node*> path;
           path = planner.path();
 
+          std::list<syllo::Node*> waypts;
+          waypts = planner.waypts();
+
+
+
           cout << "Path length: " << path.size() << endl;
 
           // Draw the path over the image
           std::list<syllo::Node*>::iterator it;
-          for (it = path.begin(); it != path.end(); it++) {
+          for (it = path.begin(); it != path.end(); it++) { 
                cv_map_.at<uchar>(height-1-(*it)->point().y,(*it)->point().x) = 90;
+          }
+
+          // Draw the waypoints over the image
+          cout << "Waypoint length: " << waypts.size() << endl;
+          for (it = waypts.begin(); it != waypts.end(); it++) {
+               cv::circle(cv_map_, cv::Point((*it)->point().x,height-1-(*it)->point().y), 5, cv::Scalar(0,0,0), 1, 8,  0);
           }
                
           cout << "=============================" << endl;

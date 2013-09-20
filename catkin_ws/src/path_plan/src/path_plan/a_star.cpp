@@ -2,7 +2,6 @@
 #include <math.h>
 
 #include "path_plan/a_star.h"
-#include "path_plan/types.h"
 
 using std::cout;
 using std::endl;
@@ -14,14 +13,14 @@ namespace syllo
      ///----------------------------------------------------------------
      AStar::AStar()
      {
-          directions_.push_back(Direction(Direction::N,Straight,Point(0,1)));
-          directions_.push_back(Direction(Direction::NE,Diagonal,Point(1,1)));
-          directions_.push_back(Direction(Direction::E,Straight,Point(1,0)));
-          directions_.push_back(Direction(Direction::SE,Diagonal,Point(1,-1)));
-          directions_.push_back(Direction(Direction::S,Straight,Point(0,-1)));
-          directions_.push_back(Direction(Direction::SW,Diagonal,Point(-1,-1)));
-          directions_.push_back(Direction(Direction::W,Straight,Point(-1,0)));
-          directions_.push_back(Direction(Direction::NW,Diagonal,Point(-1,1)));
+          directions_.push_back(Direction(Direction::N,Straight,Point<int>(0,1)));
+          directions_.push_back(Direction(Direction::NE,Diagonal,Point<int>(1,1)));
+          directions_.push_back(Direction(Direction::E,Straight,Point<int>(1,0)));
+          directions_.push_back(Direction(Direction::SE,Diagonal,Point<int>(1,-1)));
+          directions_.push_back(Direction(Direction::S,Straight,Point<int>(0,-1)));
+          directions_.push_back(Direction(Direction::SW,Diagonal,Point<int>(-1,-1)));
+          directions_.push_back(Direction(Direction::W,Straight,Point<int>(-1,0)));
+          directions_.push_back(Direction(Direction::NW,Diagonal,Point<int>(-1,1)));
      }
 
      void AStar::reset()
@@ -30,6 +29,7 @@ namespace syllo
           closed_.clear();
           map_ = NULL;
           path_.clear();
+          waypts_.clear();
      }
 
      int AStar::set_map(Map *map)
@@ -100,7 +100,7 @@ namespace syllo
                // Loop through all directions
                std::vector<Direction>::iterator dir_it;
                for (dir_it = directions_.begin(); dir_it != directions_.end(); dir_it++) {
-                    Point point;
+                    Point<int> point;
                     Node *adj_node;
           
                     point = cur_node->point() + dir_it->point();
@@ -159,14 +159,76 @@ namespace syllo
                     node = node->parent();
                } while(node->point() != start_.point());
 
+               // Compute decomposed waypoints
+
+               // Add the starting position
+               waypts_.push_back(path_.front());
+
+               Point<double> mu;
+               Point<double> var(0,0);
+               double alpha = 0.5;
+
+               bool first = true;
+               Point<int> prev;
+               std::list<syllo::Node*>::iterator it;
+
+               // Get the first vector (requires first two points
+               it = path_.begin();
+               Point<double> prev_double((*it)->point().x, (*it)->point().y);
+               it++;
+               Point<double> cur_double((*it)->point().x, (*it)->point().y);
+               mu = cur_double - prev_double;
+
+               for (; it != path_.end(); it++) {                     
+                    Point<int> vel = (*it)->point() - prev;
+                    
+                    mu = add_points(mu*(alpha), vel*(1-alpha));
+                    
+                    Point<double> diff = sub_points(vel, mu);
+                    diff = diff.absolute();
+
+                    var = var*(alpha) + diff*diff*(1-alpha);
+
+                    bool change = false;
+                    double k = 0.2;
+
+                    cout << "---------------" << endl;
+                    cout << "Diff: " << abs(vel.x - mu.x) << endl;
+                    cout << "Sqrt: " << sqrt(var.x) << endl;
+
+                    if ( (abs(vel.x - mu.x) > k+sqrt(var.x)) || (abs(vel.y - mu.y) > k+sqrt(var.y))) {
+                         waypts_.push_back(*it);
+                         change = true;
+                         var = Point<double>(0,0);
+                         
+                         Point<double> prev_double((*it)->point().x, (*it)->point().y);
+                         it++;
+                         if (it != path_.end()) {
+                              Point<double> cur_double((*it)->point().x, (*it)->point().y);
+                              mu = cur_double - prev_double;
+                         }
+                    }
+                    
+                    prev = (*it)->point();
+
+               }
+
+               // Add the last waypoint:
+               waypts_.push_back(path_.back());
+               
                return 0; 
           } else {
                return -1;
-          }
+          }          
      }
 
      std::list<Node*> & AStar::path()
      {
           return path_;
+     }
+
+     std::list<Node*> & AStar::waypts()
+     {          
+          return waypts_;
      }
 }
