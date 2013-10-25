@@ -1,0 +1,9 @@
+map_viewer:
+        tick_rate: 10
+
+trajectory_ns_0:
+        tick_rate: 10
+
+trajectory_ns_1:
+        tick_rate: 10
+        

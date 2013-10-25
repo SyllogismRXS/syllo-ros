@@ -2,7 +2,7 @@
 /// @file main.cpp
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-18 21:49:58 syllogismrxs>
+/// Time-stamp: <2013-10-25 14:54:18 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -51,6 +51,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <syllo_common/Filter.h>
+#include <syllo_common/SylloNode.h>
 
 #include "boost/multi_array.hpp"
 #include <cassert>
@@ -92,9 +93,14 @@ void callback_map(const nav_msgs::OccupancyGridConstPtr& msg)
 
 int main(int argc, char * argv[])
 {
-     ros::init(argc, argv, "syllo_stage");
+     ros::init(argc, argv, "syllo_map_viewer");
      ros::NodeHandle n;
-     ros::Rate loop_rate(5);
+
+     // Handle generic parameters for a SylloNode
+     SylloNode syllo_node_;
+     syllo_node_.init();    
+
+     //ros::Rate loop_rate(5);
 
      ros::Subscriber map_sub;
      map_sub = n.subscribe("/map", 1, callback_map);
@@ -106,9 +112,13 @@ int main(int argc, char * argv[])
                cv::waitKey(1);
           }
 
-          ros::spinOnce();
-          loop_rate.sleep();
+          syllo_node_.spin();
+          //ros::spinOnce();
+          //loop_rate.sleep();
      }
+
+     // Clean up syllo node
+     syllo_node_.cleanup();
 
      return 0;
 }

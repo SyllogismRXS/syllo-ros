@@ -1,4 +1,4 @@
-image: ../worlds/maps/cave.png
+image: ../worlds/bitmaps/cave.png
 resolution: 0.1
 origin: [0.0, 0.0, 0.0]
 occupied_thresh: 0.65

@@ -4,7 +4,7 @@
 /// @file Robot.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-10-24 23:42:27 syllogismrxs>
+/// Time-stamp: <2013-10-25 14:53:03 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -75,7 +75,7 @@ public:
 
      void callback_cmd_vel(const geometry_msgs::TwistConstPtr& msg)
      {
-          cout << name_ << " X: " << msg->linear.x;
+          //cout << name_ << " X: " << msg->linear.x;
           cmd_vel_ = *msg;
      }
 

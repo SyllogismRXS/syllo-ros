@@ -16,8 +16,8 @@ find_path(
   #PATH_SUFFIXES libstage
   )
 
-message("========> Stage_INCLUDE_DIR  <=========")
-message(${Stage_INCLUDE_DIR})
+#message("========> Stage_INCLUDE_DIR  <=========")
+#message(${Stage_INCLUDE_DIR})
 
 find_library(
   Stage_LIBRARY 

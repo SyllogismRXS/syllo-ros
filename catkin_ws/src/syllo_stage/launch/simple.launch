@@ -1,0 +1,24 @@
+<launch>
+
+<!-- <arg name="record_videoray" default="true" /> -->
+
+<rosparam file="$(find syllo_stage)/config/simple.yaml"/>
+
+  <group ns="trajectory_ns_0">
+         <remap from="cmd_vel" to="/r0/cmd_vel"/>
+         <remap from="ground_truth_odom" to="/r0/ground_truth_odom"/>
+         <node pkg="trajectory" name="simple" type="simple" output="screen"/>
+  </group>
+
+  <group ns="trajectory_ns_1">
+         <remap from="cmd_vel" to="/r1/cmd_vel"/>         
+         <remap from="ground_truth_odom" to="/r1/ground_truth_odom"/>
+         <node pkg="trajectory" name="simple" type="simple" output="screen"/>
+  </group>
+
+
+  <group ns="syllo_stage_ns">
+         <node pkg="syllo_stage" name="syllo_stage" type="syllo_stage" args="$(find syllo_stage)/worlds/box.world 2" output="screen"/>
+  </group>
+
+</launch>

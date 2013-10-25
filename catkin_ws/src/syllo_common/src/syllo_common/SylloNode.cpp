@@ -14,7 +14,7 @@ int SylloNode::init()
      namespace_ = ros::this_node::getNamespace();
      node_name_ = ros::this_node::getName();     
 
-     ros::param::param<int>("tick_rate", tick_rate_, 100);     
+     ros::param::param<int>("tick_rate", tick_rate_, 100);
      ros_tick_rate_ = new ros::Rate(tick_rate_);
      
      cout << "================================" << endl;
