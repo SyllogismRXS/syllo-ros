@@ -4,7 +4,7 @@
 /// @file Logic.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-17 15:28:45 syllogismrxs>
+/// Time-stamp: <2013-10-24 23:41:52 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -128,56 +128,63 @@ public:
                {
                     Stg::ModelRanger* rgr = robots[idx].ranger;
 
-                    // compute the vector sum of the sonar ranges	      
-                    double dx=0, dy=0;
+                    //// compute the vector sum of the sonar ranges	      
+                    //double dx=0, dy=0;
+                    //
+                    //// the range model has multiple sensors
+                    //typedef std::vector<Stg::ModelRanger::Sensor>::const_iterator sensor_iterator;
+                    //const std::vector<Stg::ModelRanger::Sensor> sensors = rgr->GetSensors();
+                    //
+                    //for(sensor_iterator sensor = sensors.begin(); sensor != sensors.end(); sensor++)
+                    //{
+                    //     // each sensor takes a single sample (as specified in the .world)
+                    //     const double srange = (*sensor).ranges[0];
+                    //     const double angle  = (*sensor).pose.a;
+                    //
+                    //     dx += srange * std::cos(angle);
+                    //     dy += srange * std::sin(angle);
+                    //} 
+                    //
+                    //if(dx == 0)
+                    //     continue;
+                    //
+                    //if(dy == 0)
+                    //     continue;
+                    //
+                    //// calculate the angle towards the farthest obstacle
+                    //const double resultant_angle = std::atan2( dy, dx );
+                    //
+                    //// check whether the front is clear
+                    //const unsigned int forward_idx = sensors.size() / 2u - 1u;
+                    //
+                    //const double forwardm_range = sensors[forward_idx - 1].ranges[0];
+                    //const double forward_range  = sensors[forward_idx + 0].ranges[0]; 
+                    //const double forwardp_range = sensors[forward_idx + 1].ranges[0]; 
+                    //
+                    //bool front_clear = (
+                    //     (forwardm_range > safe_dist / 5.0) &&
+                    //     (forward_range > safe_dist) &&
+                    //     (forwardp_range > safe_dist / 5.0) &&
+                    //     (std::abs(resultant_angle) < safe_angle)
+                    //     );
+                    //
+                    //// turn the sensor input into movement commands
+                    //
+                    //// move forwards if the front is clear
+                    //const double forward_speed = front_clear ? vspeed : 0.0;
+                    //// do not strafe
+                    //const double side_speed = 0.0;	   
+                    //
+                    //// turn towards the farthest obstacle
+                    //const double turn_speed = wgain * resultant_angle;
+            
+                    double forward_speed = 0;
+                    double side_speed = 0;
+                    double turn_speed = 0;
 
-                    // the range model has multiple sensors
-                    typedef std::vector<Stg::ModelRanger::Sensor>::const_iterator sensor_iterator;
-                    const std::vector<Stg::ModelRanger::Sensor> sensors = rgr->GetSensors();
-            
-                    for(sensor_iterator sensor = sensors.begin(); sensor != sensors.end(); sensor++)
-                    {
-                         // each sensor takes a single sample (as specified in the .world)
-                         const double srange = (*sensor).ranges[0];
-                         const double angle  = (*sensor).pose.a;
-                
-                         dx += srange * std::cos(angle);
-                         dy += srange * std::sin(angle);
-                    } 
-            
-                    if(dx == 0)
-                         continue;
-            
-                    if(dy == 0)
-                         continue;
-            
-                    // calculate the angle towards the farthest obstacle
-                    const double resultant_angle = std::atan2( dy, dx );
+                    forward_speed = robots[idx].forward_speed();
+                    turn_speed = robots[idx].turn_speed();
 
-                    // check whether the front is clear
-                    const unsigned int forward_idx = sensors.size() / 2u - 1u;
-            
-                    const double forwardm_range = sensors[forward_idx - 1].ranges[0];
-                    const double forward_range  = sensors[forward_idx + 0].ranges[0]; 
-                    const double forwardp_range = sensors[forward_idx + 1].ranges[0]; 
-            
-                    bool front_clear = (
-                         (forwardm_range > safe_dist / 5.0) &&
-                         (forward_range > safe_dist) &&
-                         (forwardp_range > safe_dist / 5.0) &&
-                         (std::abs(resultant_angle) < safe_angle)
-                         );
-            
-                    // turn the sensor input into movement commands
-
-                    // move forwards if the front is clear
-                    const double forward_speed = front_clear ? vspeed : 0.0;
-                    // do not strafe
-                    const double side_speed = 0.0;	   
-            
-                    // turn towards the farthest obstacle
-                    const double turn_speed = wgain * resultant_angle;
-            
                     // finally, relay the commands to the robot
                     robots[idx].position->SetSpeed( forward_speed, side_speed, turn_speed );
                     

@@ -4,7 +4,7 @@
 /// @file Robot.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-17 18:04:41 syllogismrxs>
+/// Time-stamp: <2013-10-24 23:42:27 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
@@ -74,50 +74,60 @@ public:
      Stg::ModelRanger* ranger;
 
      void callback_cmd_vel(const geometry_msgs::TwistConstPtr& msg)
-          {
-               cout << name_ << " X: " << msg->linear.x;
-               cmd_vel_ = *msg;
-          }
+     {
+          cout << name_ << " X: " << msg->linear.x;
+          cmd_vel_ = *msg;
+     }
 
      void set_name(const std::string &name)
-          {
-               name_ = name;
-          }
+     {
+          name_ = name;
+     }
      
      void RegisterTopics(ros::NodeHandle *n)
-          {
-               n_ = n;
+     {
+          n_ = n;
                
-               odom_topic_ = "/" + name_ + "/odom";
-               gt_odom_topic_ = "/" + name_ + "/ground_truth_odom";
+          odom_topic_ = "/" + name_ + "/odom";
+          gt_odom_topic_ = "/" + name_ + "/ground_truth_odom";
                
-               odom_pub_ = n_->advertise<nav_msgs::Odometry>(odom_topic_,1);
-               gt_odom_pub_ = n_->advertise<nav_msgs::Odometry>(gt_odom_topic_,1);
+          odom_pub_ = n_->advertise<nav_msgs::Odometry>(odom_topic_,1);
+          gt_odom_pub_ = n_->advertise<nav_msgs::Odometry>(gt_odom_topic_,1);
 
-               cmd_vel_topic_ = "/" + name_ + "/cmd_vel";
-               cmd_vel_sub_ = n->subscribe(cmd_vel_topic_, 1, &Robot::callback_cmd_vel, this);
-          }
+          cmd_vel_topic_ = "/" + name_ + "/cmd_vel";
+          cmd_vel_sub_ = n->subscribe(cmd_vel_topic_, 1, &Robot::callback_cmd_vel, this);
+     }
 
      geometry_msgs::Twist & cmd_vel()
-          {
-               return cmd_vel_;
-          }
+     {
+          return cmd_vel_;
+     }
+
+     double forward_speed()
+     {
+          return cmd_vel_.linear.x;
+     }
+
+     double turn_speed()
+     {
+          return cmd_vel_.angular.z;
+     }
 
      void publish_odometry()
-          {
-               odom_.header.stamp = ros::Time::now();
+     {
+          odom_.header.stamp = ros::Time::now();
                
-               odom_.pose.pose.position.x = position->est_pose.x;
-               odom_.pose.pose.position.y = position->est_pose.y;
-               odom_.pose.pose.position.z = position->est_pose.z;
-               odom_pub_.publish(odom_);
+          odom_.pose.pose.position.x = position->est_pose.x;
+          odom_.pose.pose.position.y = position->est_pose.y;
+          odom_.pose.pose.position.z = position->est_pose.z;
+          odom_pub_.publish(odom_);
 
-               Stg::Pose global_pose = position->GetGlobalPose();
-               gt_odom_.pose.pose.position.x = global_pose.x;
-               gt_odom_.pose.pose.position.y = global_pose.y;
-               gt_odom_.pose.pose.position.z = global_pose.z;
-               gt_odom_pub_.publish(gt_odom_);               
-          }
+          Stg::Pose global_pose = position->GetGlobalPose();
+          gt_odom_.pose.pose.position.x = global_pose.x;
+          gt_odom_.pose.pose.position.y = global_pose.y;
+          gt_odom_.pose.pose.position.z = global_pose.z;
+          gt_odom_pub_.publish(gt_odom_);               
+     }
 };
 
 #endif
