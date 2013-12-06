@@ -82,9 +82,9 @@ add_library(syllo_common
 # add_dependencies(syllo_common_node syllo_common_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(syllo_common_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(syllo_common
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

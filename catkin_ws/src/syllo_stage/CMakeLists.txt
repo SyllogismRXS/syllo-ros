@@ -12,7 +12,15 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules/")
-find_package(Stage REQUIRED)
+find_package(Stage QUIET)
+
+if (NOT("${Stage_FOUND}"))
+  message("===================>")
+  message("WARNING:")
+  message("Not building syllo_stage library because the Stage libs and headers aren't installed.")
+  message("===================>")
+  return()
+endif(NOT("${Stage_FOUND}"))
 
 find_package(FLTK REQUIRED)
 
