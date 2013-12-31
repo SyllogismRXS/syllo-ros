@@ -4,7 +4,7 @@
 /// @file a_star.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-20 00:32:03 syllogismrxs>
+/// Time-stamp: <2013-12-17 23:53:43 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013

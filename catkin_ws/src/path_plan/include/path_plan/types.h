@@ -4,7 +4,7 @@
 /// @file types.h
 /// @author Kevin DeMarco <kevin.demarco@gmail.com>
 ///
-/// Time-stamp: <2013-09-20 00:47:43 syllogismrxs>
+/// Time-stamp: <2013-12-18 00:11:21 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 17 Sep 2013
