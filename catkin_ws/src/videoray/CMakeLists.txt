@@ -6,6 +6,7 @@ project(videoray)
 ## is used, also find other catkin packages
 #find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 find_package(catkin REQUIRED COMPONENTS 
+  cmake_modules
   serial
   roscpp 
   std_msgs 

@@ -4,7 +4,7 @@ project(path_plan)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS nav_msgs roscpp std_msgs syllo_common)
+find_package(catkin REQUIRED COMPONENTS cmake_modules nav_msgs roscpp std_msgs syllo_common)
 
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})

@@ -4,7 +4,7 @@
 /// @file Joystick.h
 /// @author syllogismrxs <syllogismrxs@syllogismrxs-HP-EliteBook-6930p>
 ///
-/// Time-stamp: <2013-09-04 14:02:17 syllogismrxs>
+/// Time-stamp: <2015-07-23 17:38:50 syllogismrxs>
 ///
 /// @version 1.0
 /// Created: 19 Feb 2013
@@ -41,6 +41,7 @@
 
 #include <fcntl.h>
 #include <linux/joystick.h>
+#include <unistd.h>
 
 class Joystick {
 private:
