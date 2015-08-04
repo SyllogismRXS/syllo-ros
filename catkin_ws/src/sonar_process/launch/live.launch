@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="bag" default="false" />
+  
+  <node pkg="sonar_process" name="diver_displace_detect" type="diver_displace_detector" output="screen"/>
+  <node pkg="image_transport" name="republish" type="republish" args="compressed in:=/sonar_xy_0 raw out:=/sonar_xy_0" output="screen" if="$(arg bag)"/>
+  <!--<node pkg="rosbag" name="play" type="play" args="/media/syllogismrxs/My\ Passport/NEEMO/thaus_2015-07-23-14-22-37.bag" if="$(arg bag)"/>-->
+
+<!--<arg name="record_videoray" default="true" />-->
+
+<!--<rosparam file="$(find videoray)/config/deploy.yaml"/>-->
+
+<!--  <group ns="videoray_ns">
+         <node pkg="videoray" name="videoray_1" type="control" output="screen"/>
+  </group>
+
+  <group ns="joystick_ns">
+    <node pkg="input" name="joystick_1" type="joystick" output="screen"/>
+  </group>
+  
+  <node pkg="rosbag" type="record" name="rosbag_record_videoray"
+      args="-a -o /tmp/videoray-ros-data"
+      if="$(arg record_videoray)" />
+-->
+
+</launch>
