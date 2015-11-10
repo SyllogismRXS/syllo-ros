@@ -3,8 +3,8 @@
 #include <path_plan/types.h>
 #include <path_plan/a_star.h>
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 
 // OpenCV headers
 #include <cv.h>

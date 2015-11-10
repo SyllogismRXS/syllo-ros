@@ -33,6 +33,11 @@ find_path(opencv_workbench_INCLUDE_DIR
 #message("=======> ${opencv_workbench_INCLUDE_DIR_2}")
 
 # Find all the relevant opencv_workbench libraries
+find_library(wb_LIBRARY
+  NAMES wb
+  PATHS ${opencv_workbench_PKGCONF_LIBRARY_DIRS}
+)
+
 find_library(plot_LIBRARY
   NAMES plot
   PATHS ${opencv_workbench_PKGCONF_LIBRARY_DIRS}
@@ -67,6 +72,7 @@ find_library(displace_detector_LIBRARY
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
 set(opencv_workbench_PROCESS_INCLUDES opencv_workbench_INCLUDE_DIR)
 set(opencv_workbench_PROCESS_LIBS 
+  wb_LIBRARY
   plot_LIBRARY
   syllo_LIBRARY
   track_LIBRARY

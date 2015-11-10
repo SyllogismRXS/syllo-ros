@@ -69,17 +69,17 @@ public:
                detector_->set_frame(frame_number_, original);
      
                // Get track list from detector
-               std::vector<syllo::Track> tracks = detector_->tracks();
+               std::vector<wb::Entity> tracks = detector_->tracks();
      
                // Draw estimated diver locations on original image
-               std::vector<syllo::Track>::iterator it = tracks.begin();
+               std::vector<wb::Entity>::iterator it = tracks.begin();
                for (; it != tracks.end(); it++) {
-                    cv::Point3d point3d = it->position();
+cv::Point centroid = it->centroid();
           
-                    if (it->type() == syllo::Diver) {
+                    if (it->type() == wb::Entity::Diver) {
                          // If this is a diver type, mark it on the original image                    
-                         int radius = 3;
-                         cv::circle(original, cv::Point(point3d.x,point3d.y), 
+int radius = 3;
+                         cv::circle(original, centroid, 
                                     radius, cv::Scalar(0,0,0), 2, 8, 0);
                     }
                }          
