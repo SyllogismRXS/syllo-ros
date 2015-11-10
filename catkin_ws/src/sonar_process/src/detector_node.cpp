@@ -36,7 +36,8 @@ public:
 
      void setup_topics()
           {
-               sonar_sub_ = n_.subscribe("/sonar_xy_0", 1, &ROSHandler::sonarCallback, this); 
+               //sonar_sub_ = n_.subscribe("/sonar_xy_0", 1, &ROSHandler::sonarCallback, this); 
+               sonar_sub_ = n_.subscribe("/sonar_image", 1, &ROSHandler::sonarCallback, this); 
           }
 
      bool load_plugin(std::string plugin_name)

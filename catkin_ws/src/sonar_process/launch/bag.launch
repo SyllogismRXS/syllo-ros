@@ -1,6 +1,6 @@
 <launch>
 
-<node pkg="sonar_process" name="diver_displace_detect" type="diver_displace_detector" output="screen"/>
+<node pkg="sonar_process" name="detector_node" type="detector_node" output="screen"/>
 <node pkg="image_transport" name="republish" type="republish" args="compressed in:=/sonar_xy_0 raw out:=/sonar_xy_0" output="screen"/>
 <node pkg="rosbag" name="play" type="play" args="/home/syllogismrxs/Documents/Thesis/data/NEEMO/rosbag/thaus_2015-07-23-14-22-37.bag" />
 

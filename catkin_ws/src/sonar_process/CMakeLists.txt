@@ -144,14 +144,14 @@ include_directories(
 # )
 
 # Declare a cpp executable
-add_executable(diver_displace_detector src/diver_displace_detector.cpp)
+add_executable(detector_node src/detector_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(sonar_process_node sonar_process_generate_messages_cpp)
 
 # Specify libraries to link a library or executable target against
-target_link_libraries(diver_displace_detector
+target_link_libraries(detector_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   ${opencv_workbench_LIBRARIES}
