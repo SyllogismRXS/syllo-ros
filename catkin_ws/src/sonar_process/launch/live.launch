@@ -2,7 +2,7 @@
 
   <arg name="bag" default="false" />
   
-  <node pkg="sonar_process" name="diver_displace_detect" type="diver_displace_detector" output="screen"/>
+  <node pkg="sonar_process" name="diver_displace_detect" type="diver_displace_detector" output="screen" args="relative_detector" />
   <node pkg="image_transport" name="republish" type="republish" args="compressed in:=/sonar_xy_0 raw out:=/sonar_xy_0" output="screen" if="$(arg bag)"/>
   <!--<node pkg="rosbag" name="play" type="play" args="/media/syllogismrxs/My\ Passport/NEEMO/thaus_2015-07-23-14-22-37.bag" if="$(arg bag)"/>-->
 

@@ -31,33 +31,33 @@ class ROSHandler
 {
 public:
      ROSHandler() {
-
-          frame_number_ = 0;
-
-          std::string plugin_name = "displace_detector";
-
-          // Load the Bridge shared library (based on yml file)
-          int retcode = plugin_manager_.search_for_plugins("OPENCV_WORKBENCH_PLUGIN_PATH");
-          if (retcode != 0) {
-               cout << "Failed to find plugins." << endl;               
-          }
-
-          retcode = plugin_manager_.open_library(plugin_name);
-          if (retcode != 0) {
-               cout << "Unable to open library: " << plugin_name << endl;
-          } else {
-               cout << "Using Bridge Library: " << plugin_name << endl;
-          }
-     
-          detector_ = plugin_manager_.object();
-          detector_->print();       
-          detector_->hide_windows(false);     
-
-          //Topic you want to publish
-          //pub_ = n_.advertise<PUBLISHED_MESSAGE_TYPE>("/published_topic", 1);               
-                    
-          sonar_sub_ = n_.subscribe("/sonar_xy_0", 1, &ROSHandler::sonarCallback, this); 
+          frame_number_ = 0;                    
      }
+
+     void setup_topics()
+          {
+               sonar_sub_ = n_.subscribe("/sonar_xy_0", 1, &ROSHandler::sonarCallback, this); 
+          }
+
+     bool load_plugin(std::string plugin_name)
+          {
+               // Load the Bridge shared library (based on yml file)
+               int retcode = plugin_manager_.search_for_plugins("OPENCV_WORKBENCH_PLUGIN_PATH");
+               if (retcode != 0) {
+                    cout << "Failed to find plugins." << endl;               
+               }
+
+               retcode = plugin_manager_.open_library(plugin_name);
+               if (retcode != 0) {
+                    cout << "Unable to open library: " << plugin_name << endl;
+               } else {
+                    cout << "Using Bridge Library: " << plugin_name << endl;
+               }
+     
+               detector_ = plugin_manager_.object();
+               detector_->print();       
+               detector_->hide_windows(false);     
+          }
      
      void sonarCallback(const sensor_msgs::ImageConstPtr &msg)
           {
@@ -74,11 +74,11 @@ public:
                // Draw estimated diver locations on original image
                std::vector<wb::Entity>::iterator it = tracks.begin();
                for (; it != tracks.end(); it++) {
-cv::Point centroid = it->centroid();
-          
+                    cv::Point centroid = it->centroid();
+                    
                     if (it->type() == wb::Entity::Diver) {
                          // If this is a diver type, mark it on the original image                    
-int radius = 3;
+                         int radius = 3;
                          cv::circle(original, centroid, 
                                     radius, cv::Scalar(0,0,0), 2, 8, 0);
                     }
@@ -108,7 +108,18 @@ int main(int argc, char **argv)
 {    
      ros::init(argc, argv, "diver_displace_detector");          
      
+     if (argc < 2) {
+          cout << "============================================" << endl;
+          cout << "Usage: " << argv[0] << " <plugin_library>" << endl;
+          return -1;
+     }
+
+     std::string plugin_library = std::string(argv[1]);
+     
      ROSHandler ros_handler;
+
+     ros_handler.load_plugin(plugin_library);
+     ros_handler.setup_topics();
      
      ros::Rate loop_rate(10);
      while (ros::ok()) {          
